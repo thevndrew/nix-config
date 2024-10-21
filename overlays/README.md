@@ -1,3 +1,0 @@
-# Overlays
-
-Not using any overlays yet...
