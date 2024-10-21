@@ -1,4 +1,82 @@
-{inputs, ...}: {
+{
+  lib,
+  config,
+  pkgs,
+  inputs,
+  isDesktop,
+  isWSL,
+  other-pkgs,
+  systemInfo,
+  ...
+}: let
+  keys = [
+    "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIHo+NCpecLu+vJrhgp0deaNXblILsmxxixpTg8pw+WAL WSL"
+    "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIDhkI3pjA6Wlpqg/cycwov3VXXbivbBMXDzUyxIyYwJF polar-tang"
+    "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKjhR4i/ce5HZ/W2tEJsbEJL2754R5H24bPD3cBxdWEP thousand-sunny"
+    "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINGqG13rubr95t6Yepq745+TxYtyqR50BZhR33eDtlUX going-merry"
+  ];
+  wslPass = "$6$90MQYhLKTQJ71Zw9$WrsMNytjnVmZcKNwuWg3grXPsfC2LTw5wt7QGcHc9A5fJUIhskOhJd1L0s.E.VRgpzeuckuEgrojxqqkch51V0";
+in {
+  disabledModules = [];
+
+  imports = [
+    # "${inputs.nixpkgs-unstable}/nixos/modules/..."
+  ];
+
+  cockpit.enable = !isWSL;
+  gui.enable = isDesktop;
+  wsl-cfg.enable = isWSL;
+
+  networking.samba.sharing.enable = !isWSL;
+  networking.samba.storage.enable = systemInfo.hostname == "thousand-sunny";
+
+  security.sudo.enable = true;
+  security.sudo.wheelNeedsPassword = false;
+
+  time.timeZone = "America/New_York";
+
+  fonts.enableDefaultPackages = true;
+
+  programs = {
+    zsh.enable = true;
+
+    nh = {
+      enable = true;
+      package = other-pkgs.unstable.nh;
+      clean = {
+        enable = true;
+        dates = "weekly";
+        extraArgs = "--keep 3 --keep-since 7d";
+      };
+      flake = "${systemInfo.home}/nix-config";
+    };
+  };
+
+  #nixpkgs.overlays = import ../../lib/overlays.nix ++ [
+  #  (import ./vim.nix { inherit inputs; })
+  #];
+  environment = {
+    enableAllTerminfo = true;
+
+    # Add ~/.local/bin to PATH
+    localBinInPath = true;
+
+    pathsToLink = [
+      "/share/bash-completion"
+      "/share/zsh"
+    ];
+
+    shells = [pkgs.zsh];
+
+    systemPackages = with pkgs; [
+      mergerfs
+      tmux
+      neovim
+      git
+      ethtool
+    ];
+  };
+
   nix = {
     registry = {
       nixpkgs = {
@@ -48,5 +126,82 @@
       dates = "weekly";
       options = "--delete-older-than 7d";
     };
+  };
+
+  programs.nix-ld.enable = true;
+
+  services = {
+    openssh = {
+      enable = true;
+      settings.PasswordAuthentication = false;
+      settings.PermitRootLogin = "yes";
+      ports = [22 2222];
+    };
+
+    tailscale = {
+      enable = true;
+      package = other-pkgs.unstable.tailscale;
+      useRoutingFeatures = "both";
+    };
+
+    vnstat.enable = true;
+
+    resolved = {
+      enable = false;
+      fallbackDns = [
+        "100.100.100.100"
+        "10.89.0.1"
+        "9.9.9.9"
+      ];
+      domains = [
+        "ainu-kanyu.ts.net"
+        "dns.podman"
+      ];
+    };
+  };
+
+  sops = lib.mkIf (!isWSL) {
+    defaultSopsFile = "${inputs.mysecrets}/secrets/nix.yaml";
+    age.sshKeyPaths = sopsKeys;
+    secrets."passwords/${systemInfo.user}" = {
+      neededForUsers = true;
+    };
+  };
+
+  users.groups = {
+    users.gid = 100;
+    #storage.gid = ???;
+  };
+
+  users = {
+    mutableUsers = false;
+    users.${systemInfo.user} =
+      {
+        inherit (systemInfo) home;
+        shell = pkgs.zsh;
+        isNormalUser = true;
+        openssh.authorizedKeys.keys = keys;
+        uid =
+          if !isWSL
+          then 1001
+          else lib.mkForce 1001;
+      }
+      // lib.optionalAttrs (!isWSL) {
+        hashedPasswordFile = config.sops.secrets."passwords/${systemInfo.user}".path;
+      }
+      // lib.optionalAttrs isWSL {
+        hashedPassword = wslPass;
+      };
+
+    users.root =
+      {
+        openssh.authorizedKeys.keys = keys;
+      }
+      // lib.optionalAttrs (!isWSL) {
+        hashedPasswordFile = config.sops.secrets."passwords/${systemInfo.user}".path;
+      }
+      // lib.optionalAttrs isWSL {
+        hashedPassword = wslPass;
+      };
   };
 }
