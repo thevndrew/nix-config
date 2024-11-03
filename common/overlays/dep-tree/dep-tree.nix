@@ -3,8 +3,7 @@
   fetchFromGitHub,
   buildGoModule,
   linkFarm,
-}:
-let
+}: let
   tuiTestDeps = {
     react-stl-viewer = fetchFromGitHub {
       owner = "gabotechs";
@@ -34,48 +33,48 @@ let
   pname = "dep-tree";
   version = "0.23.0";
 in
-buildGoModule {
-  inherit pname version;
+  buildGoModule {
+    inherit pname version;
 
-  src = fetchFromGitHub {
-    owner = "gabotechs";
-    repo = pname;
-    rev = "v${version}";
-    hash = "sha256-Vd6g9UE3XEFGjCK8tFfOphYcNx+zeBS9rBVz0MDLe1I=";
-  };
+    src = fetchFromGitHub {
+      owner = "gabotechs";
+      repo = pname;
+      rev = "v${version}";
+      hash = "sha256-Vd6g9UE3XEFGjCK8tFfOphYcNx+zeBS9rBVz0MDLe1I=";
+    };
 
-  vendorHash = "sha256-KoVOjZq+RrJ2gzLnANHPPtbEY1ztC0rIXWD9AXAxqMg=";
+    vendorHash = "sha256-KoVOjZq+RrJ2gzLnANHPPtbEY1ztC0rIXWD9AXAxqMg=";
 
-  preCheck = ''
-    substituteInPlace internal/tui/tui_test.go \
-      --replace-fail /tmp/dep-tree-tests ${linkFarm "dep-tree_testDeps-farm" tuiTestDeps}
-  '';
-
-  checkPhase = ''
-    runHook preCheck
-    # We do not set trimpath for tests, in case they reference test assets
-    export GOFLAGS=''${GOFLAGS//-trimpath/}
-
-    # checkFlags is not able to skip tests via pattern.
-    # possibly requires fixing in buildGoModule.
-    # For now, this is the new checkPhase
-    go test ./... -skip='TestRoot.*|TestFilesFromArgs.*'
-    # these tests were not feasibly fixable.
-    # a LARGE portion of the original source would need to be edited via patch for this to work.
-
-    runHook postCheck
-  '';
-
-  meta = {
-    description = "Tool for visualizing interconnectedness of codebases in multiple languages";
-    longDescription = ''
-      dep-tree is a tool for interactively visualizing the complexity of a code base.
-      It helps analyze the interconnectedness of the codebase and create goals to improve maintainability.
+    preCheck = ''
+      substituteInPlace internal/tui/tui_test.go \
+        --replace-fail /tmp/dep-tree-tests ${linkFarm "dep-tree_testDeps-farm" tuiTestDeps}
     '';
-    homepage = "https://github.com/gabotechs/dep-tree";
-    changelog = "https://github.com/gabotechs/dep-tree/releases/tag/v${version}";
-    license = lib.licenses.mit;
-    maintainers = with lib.maintainers; [ birdee ];
-    mainProgram = "dep-tree";
-  };
-}
+
+    checkPhase = ''
+      runHook preCheck
+      # We do not set trimpath for tests, in case they reference test assets
+      export GOFLAGS=''${GOFLAGS//-trimpath/}
+
+      # checkFlags is not able to skip tests via pattern.
+      # possibly requires fixing in buildGoModule.
+      # For now, this is the new checkPhase
+      go test ./... -skip='TestRoot.*|TestFilesFromArgs.*'
+      # these tests were not feasibly fixable.
+      # a LARGE portion of the original source would need to be edited via patch for this to work.
+
+      runHook postCheck
+    '';
+
+    meta = {
+      description = "Tool for visualizing interconnectedness of codebases in multiple languages";
+      longDescription = ''
+        dep-tree is a tool for interactively visualizing the complexity of a code base.
+        It helps analyze the interconnectedness of the codebase and create goals to improve maintainability.
+      '';
+      homepage = "https://github.com/gabotechs/dep-tree";
+      changelog = "https://github.com/gabotechs/dep-tree/releases/tag/v${version}";
+      license = lib.licenses.mit;
+      maintainers = with lib.maintainers; [birdee];
+      mainProgram = "dep-tree";
+    };
+  }

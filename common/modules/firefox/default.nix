@@ -1,5 +1,13 @@
-{ moduleNamespace, inputs, ... }:
-{config, pkgs, lib, ... }: let
+{
+  moduleNamespace,
+  inputs,
+  ...
+}: {
+  config,
+  pkgs,
+  lib,
+  ...
+}: let
   cfg = config.${moduleNamespace}.firefox;
 in {
   _file = ./default.nix;
@@ -7,7 +15,7 @@ in {
     ${moduleNamespace}.firefox.enable = lib.mkEnableOption "birdeeFox";
   };
   config = lib.mkIf cfg.enable {
-    programs.firefox = (let
+    programs.firefox = let
     in {
       enable = true;
       profiles.birdee = {
@@ -33,6 +41,6 @@ in {
           darkreader
         ];
       };
-    });
+    };
   };
 }

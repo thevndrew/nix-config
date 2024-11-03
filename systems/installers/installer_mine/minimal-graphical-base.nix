@@ -1,7 +1,10 @@
 # This module contains the basic configuration for building a graphical NixOS
 # installation CD.
-{ lib, pkgs, ... }:
 {
+  lib,
+  pkgs,
+  ...
+}: {
   # Whitelist wheel users to do anything
   # This is useful for things like pkexec
   #
@@ -38,5 +41,4 @@
     mesa-demos
     open-vm-tools-headless
   ];
-
 }

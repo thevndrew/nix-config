@@ -6,17 +6,20 @@
   zsh-autosuggestions,
   zsh-vi-mode,
   oh-my-posh,
-}:
-let
+}: let
   fzfinit = stdenv.mkDerivation {
     name = "fzfinit";
-    builder = writeText "builder.sh" # bash
+    builder =
+      writeText "builder.sh" # bash
+      
       ''
         source $stdenv/setup
         ${fzf}/bin/fzf --zsh > $out
       '';
   };
-  newzshrc = writeText "zshrc" # bash
+  newzshrc =
+    writeText "zshrc" # bash
+    
     ''
       if [[ -f ~/.zshrc ]]; then
         source ~/.zshrc
@@ -57,38 +60,59 @@ let
       source ${fzfinit}
       eval "$(${oh-my-posh}/bin/oh-my-posh init zsh --config ${./atomic-emodipt.omp.json})"
     '';
-  newzshenv = writeText "zshenv" /*bash*/''
-    if [[ -f ~/.zshenv ]]; then
-      source ~/.zshenv
-    fi
-  '';
-  newzprofile = writeText "zprofile" /*bash*/''
-    if [[ -f ~/.zprofile ]]; then
-      source ~/.zprofile
-    fi
-  '';
-  newzlogin = writeText "zlogin" /*bash*/''
-    if [[ -f ~/.zlogin ]]; then
-      source ~/.zlogin
-    fi
-  '';
-  newzlogout = writeText "zlogout" /*bash*/''
-    if [[ -f ~/.zlogout ]]; then
-      source ~/.zlogout
-    fi
-  '';
-
-in
-stdenv.mkDerivation {
-  name = "newzdotdir";
-  builder = writeText "builder.sh" # bash
+  newzshenv =
+    writeText "zshenv"
+    /*
+    bash
+    */
     ''
-      source $stdenv/setup
-      mkdir -p $out
-      cp ${newzshrc} $out/.zshrc
-      cp ${newzshenv} $out/.zshenv
-      cp ${newzprofile} $out/.zprofile
-      cp ${newzlogin} $out/.zlogin
-      cp ${newzlogout} $out/.zlogout
+      if [[ -f ~/.zshenv ]]; then
+        source ~/.zshenv
+      fi
     '';
-}
+  newzprofile =
+    writeText "zprofile"
+    /*
+    bash
+    */
+    ''
+      if [[ -f ~/.zprofile ]]; then
+        source ~/.zprofile
+      fi
+    '';
+  newzlogin =
+    writeText "zlogin"
+    /*
+    bash
+    */
+    ''
+      if [[ -f ~/.zlogin ]]; then
+        source ~/.zlogin
+      fi
+    '';
+  newzlogout =
+    writeText "zlogout"
+    /*
+    bash
+    */
+    ''
+      if [[ -f ~/.zlogout ]]; then
+        source ~/.zlogout
+      fi
+    '';
+in
+  stdenv.mkDerivation {
+    name = "newzdotdir";
+    builder =
+      writeText "builder.sh" # bash
+      
+      ''
+        source $stdenv/setup
+        mkdir -p $out
+        cp ${newzshrc} $out/.zshrc
+        cp ${newzshenv} $out/.zshenv
+        cp ${newzprofile} $out/.zprofile
+        cp ${newzlogin} $out/.zlogin
+        cp ${newzlogout} $out/.zlogout
+      '';
+  }

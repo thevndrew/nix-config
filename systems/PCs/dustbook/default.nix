@@ -1,8 +1,19 @@
 # Edit this configuration file to define what should be installed on
 # your system.  Help is available in the configuration.nix(5) man page
 # and in the NixOS manual (accessible by running ‘nixos-help’).
-
-{ config, pkgs, lib, self, flake-path, inputs, stateVersion, users, hostname, system-modules, ... }: let
+{
+  config,
+  pkgs,
+  lib,
+  self,
+  flake-path,
+  inputs,
+  stateVersion,
+  users,
+  hostname,
+  system-modules,
+  ...
+}: let
 in {
   imports = with system-modules; [
     ../PCs.nix
@@ -26,29 +37,29 @@ in {
     '';
   };
 
-  boot.kernelModules = [ "kvm-intel" ];
+  boot.kernelModules = ["kvm-intel"];
 
   environment.systemPackages = let
   in
-  with pkgs; [
-    glxinfo
-    pciutils
-    mesa
-  ];
+    with pkgs; [
+      glxinfo
+      pciutils
+      mesa
+    ];
 
   environment.shellAliases = {
     me-build-system = ''${pkgs.writeShellScript "me-build-system" ''
-      export FLAKE="${flake-path}";
-      exec ${self}/scripts/system "$@"
-    ''}'';
+        export FLAKE="${flake-path}";
+        exec ${self}/scripts/system "$@"
+      ''}'';
     me-build-home = ''${pkgs.writeShellScript "me-build-home" ''
-      export FLAKE="${flake-path}";
-      exec ${self}/scripts/home "$@"
-    ''}'';
+        export FLAKE="${flake-path}";
+        exec ${self}/scripts/home "$@"
+      ''}'';
     me-build-both = ''${pkgs.writeShellScript "me-build-both" ''
-      export FLAKE="${flake-path}";
-      exec ${self}/scripts/both "$@"
-    ''}'';
+        export FLAKE="${flake-path}";
+        exec ${self}/scripts/both "$@"
+      ''}'';
   };
 
   services.auto-cpufreq.enable = true;
@@ -57,11 +68,11 @@ in {
   boot.kernelPackages = pkgs.linuxPackages;
   nixpkgs.config.nvidia.acceptLicense = true;
   hardware.nvidia.modesetting.enable = true;
-  services.xserver.videoDrivers = [ "modesetting" "nvidia" "intel" ];
+  services.xserver.videoDrivers = ["modesetting" "nvidia" "intel"];
   hardware.nvidia.prime = {
     sync.enable = true;
-    nvidiaBusId = "PCI:01:00:0";   # Found with lspci | grep VGA
-    intelBusId = "PCI:00:02:0";   # Found with lspci | grep VGA
+    nvidiaBusId = "PCI:01:00:0"; # Found with lspci | grep VGA
+    intelBusId = "PCI:00:02:0"; # Found with lspci | grep VGA
   };
   hardware.nvidia.package = config.boot.kernelPackages.nvidiaPackages.legacy_470;
 
@@ -70,7 +81,8 @@ in {
     enable = true;
     enable32Bit = true;
     extraPackages = with pkgs; [
-      vaapiVdpau libva
+      vaapiVdpau
+      libva
     ];
   };
 
@@ -83,5 +95,4 @@ in {
   ];
 
   services.mbpfan.enable = lib.mkDefault true;
-
 }

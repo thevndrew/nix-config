@@ -1,16 +1,17 @@
-{ APPNAME
-, lib
-, makeWrapper
-, stdenv
-, ...
-# override overrides these args
+{
+  APPNAME,
+  lib,
+  makeWrapper,
+  stdenv,
+  ...
+  # override overrides these args
 }: let
   APPDRV = stdenv.mkDerivation {
     # overrideAttrs overrides this set
     name = "${APPNAME}";
     src = ./src;
     buildInputs = [];
-    nativeBuildInputs = [ makeWrapper ];
+    nativeBuildInputs = [makeWrapper];
     buildPhase = ''
       runHook preBuild
 
@@ -54,8 +55,11 @@
       description = "${APPNAME} is a program that does stuff";
       license = lib.licenses.mit;
       homepage = "https://github.com/BirdeeHub/${APPNAME}";
-      maintainers = if lib.maintainers ? birdee then [ lib.maintainers.birdee ] else [];
+      maintainers =
+        if lib.maintainers ? birdee
+        then [lib.maintainers.birdee]
+        else [];
     };
   };
 in
-APPDRV
+  APPDRV

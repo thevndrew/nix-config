@@ -1,8 +1,17 @@
 # Edit this configuration file to define what should be installed on
 # your system.  Help is available in the configuration.nix(5) man page
 # and in the NixOS manual (accessible by running ‘nixos-help’).
-
-{ config, pkgs, self, inputs, stateVersion, users, hostname, system-modules, ... }: let
+{
+  config,
+  pkgs,
+  self,
+  inputs,
+  stateVersion,
+  users,
+  hostname,
+  system-modules,
+  ...
+}: let
 in {
   imports = with system-modules; [
     i3
@@ -18,7 +27,7 @@ in {
 
   birdeeVim = {
     enable = true;
-    packageNames = [ "noAInvim" ];
+    packageNames = ["noAInvim"];
   };
 
   users.users.birdee = {
@@ -26,7 +35,7 @@ in {
     shell = pkgs.zsh;
     isNormalUser = true;
     description = "";
-    extraGroups = [ "networkmanager" "wheel" "docker" ];
+    extraGroups = ["networkmanager" "wheel" "docker"];
     initialPassword = "test";
     # this is packages for nixOS user config.
     # packages = []; # empty because that is managed by home-manager
@@ -48,7 +57,7 @@ in {
 
   # services.flatpak.enable = true;
 
-  boot.kernelModules = [ "kvm" ];
+  boot.kernelModules = ["kvm"];
   # virtualisation.libvirtd.enable = true;
 
   services.clamav.daemon.enable = true;
@@ -63,7 +72,7 @@ in {
     lsnc = "lsd --color=never";
     la = "lsd -a";
     ll = "lsd -lh";
-    l  = "lsd -alh";
+    l = "lsd -alh";
   };
 
   # Bootloader.
@@ -108,7 +117,7 @@ in {
   # Allow unfree packages
   nixpkgs.config.allowUnfree = true;
   # Allow flakes and new command
-  nix.settings.experimental-features = [ "nix-command" "flakes" ];
+  nix.settings.experimental-features = ["nix-command" "flakes"];
   nix.settings.auto-optimise-store = true;
 
   nix.gc = {
@@ -158,15 +167,15 @@ in {
     fira-code
     openmoji-color
     noto-fonts-emoji
-    (nerdfonts.override { fonts = [ "FiraMono" "Go-Mono" ]; })
+    (nerdfonts.override {fonts = ["FiraMono" "Go-Mono"];})
   ];
   fonts.fontconfig = {
     enable = true;
     defaultFonts = {
-      serif = [ "GoMono Nerd Font Mono" ];
-      sansSerif = [ "FiraCode Nerd Font Mono" "FiraCode" ];
-      monospace = [ "FiraCode Nerd Font Mono" ];
-      emoji = [ "OpenMoji Color" "OpenMoji" "Noto Color Emoji" ];
+      serif = ["GoMono Nerd Font Mono"];
+      sansSerif = ["FiraCode Nerd Font Mono" "FiraCode"];
+      monospace = ["FiraCode Nerd Font Mono"];
+      emoji = ["OpenMoji Color" "OpenMoji" "Noto Color Emoji"];
     };
   };
   fonts.fontDir.enable = true;
@@ -177,44 +186,44 @@ in {
 
   # List packages installed in system profile. To search, run:
   # $ nix search wget
-  environment.systemPackages = (let
+  environment.systemPackages = let
   in
-  with pkgs; [
-    # vim # Do not forget to add an editor to edit configuration.nix! The Nano editor is also installed by default.
-    fuse
-    fuse3
-    parted
-    gparted
-    sshfs-fuse
-    socat
-    nix-output-monitor
-    screen
-    tcpdump
-    sdparm
-    hdparm
-    smartmontools # for diagnosing hard disks
-    nix-info
-    pciutils
-    lm_sensors
-    usbutils
-    nvme-cli
-    unzip
-    zip
-    exfat
-    exfatprogs
-    lshw
-    lsd
-    bat
-    wget
-    tree
-    zip
-    _7zz
-    unzip
-    xclip
-    xsel
-    git
-    ntfs3g
-  ]);
+    with pkgs; [
+      # vim # Do not forget to add an editor to edit configuration.nix! The Nano editor is also installed by default.
+      fuse
+      fuse3
+      parted
+      gparted
+      sshfs-fuse
+      socat
+      nix-output-monitor
+      screen
+      tcpdump
+      sdparm
+      hdparm
+      smartmontools # for diagnosing hard disks
+      nix-info
+      pciutils
+      lm_sensors
+      usbutils
+      nvme-cli
+      unzip
+      zip
+      exfat
+      exfatprogs
+      lshw
+      lsd
+      bat
+      wget
+      tree
+      zip
+      _7zz
+      unzip
+      xclip
+      xsel
+      git
+      ntfs3g
+    ];
 
   # Some programs need SUID wrappers, can be configured further or are
   # started in user sessions.
@@ -243,5 +252,4 @@ in {
   # Before changing this value read the documentation for this option
   # (e.g. man configuration.nix or on https://nixos.org/nixos/options.html).
   system.stateVersion = stateVersion; # Did you read the comment?
-
 }

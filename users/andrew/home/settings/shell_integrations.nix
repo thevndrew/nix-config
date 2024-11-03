@@ -1,4 +1,0 @@
-{
-  enableBashIntegration = true;
-  enableZshIntegration = true;
-}

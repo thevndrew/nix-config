@@ -3,12 +3,10 @@
   flake-parts-lib,
   config,
   ...
-}:
-let
+}: let
   inherit (lib) types mkOption genAttrs;
   file = ./nixosCFGperSystem.nix;
-in
-{
+in {
   _file = file;
 
   options = {
@@ -17,7 +15,7 @@ in
 
       options.nixosConfigurations = mkOption {
         type = types.lazyAttrsOf types.unspecified;
-        default = { };
+        default = {};
         description = ''
           `perSystem.nixosConfigurations.<name> = flake.legacyPackages.$${system}.nixosConfigurations.<name>`
           Warning: will conflict with existing `flake.legacyPackages.$${system}.nixosConfigurations.<name>` definitions

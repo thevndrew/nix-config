@@ -1,5 +1,13 @@
-{ moduleNamespace, inputs, ... }:
-{ config, pkgs, lib, ... }: let
+{
+  moduleNamespace,
+  inputs,
+  ...
+}: {
+  config,
+  pkgs,
+  lib,
+  ...
+}: let
   cfg = config.${moduleNamespace}.thunar;
 in {
   _file = ./default.nix;
@@ -20,9 +28,9 @@ in {
     };
   };
   config = lib.mkIf cfg.enable (let
-    package = pkgs.xfce.thunar.override { thunarPlugins = cfg.plugins; };
+    package = pkgs.xfce.thunar.override {thunarPlugins = cfg.plugins;};
   in {
-    home.packages = [ package ];
+    home.packages = [package];
     home.file = {
       ".config/Thunar/uca.xml".text = lib.mkIf cfg.enableCustomActions (builtins.readFile ./uca.xml);
     };

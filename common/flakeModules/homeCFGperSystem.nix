@@ -3,12 +3,10 @@
   flake-parts-lib,
   config,
   ...
-}:
-let
+}: let
   inherit (lib) types mkOption genAttrs;
   file = ./homeCFGperSystem.nix;
-in
-{
+in {
   _file = file;
 
   options = {
@@ -17,7 +15,7 @@ in
 
       options.homeConfigurations = mkOption {
         type = types.lazyAttrsOf types.unspecified;
-        default = { };
+        default = {};
         description = ''
           `perSystem.homeConfigurations.<name> = flake.legacyPackages.$${system}.homeConfigurations.<name>`
           Warning: will conflict with existing `flake.legacyPackages.$${system}.homeConfigurations.<name>` definitions

@@ -17,11 +17,16 @@
   moduleNamespace = "vndrewMods";
   args = {inherit inputs moduleNamespace homeManager utils;};
 in {
-  LD = import (systemOnly ./LD) args;
-  firefox = import (homeOnly ./firefox) args;
-  thunar = import (homeOnly ./thunar) args;
-  ranger = import ./ranger args;
   alacritty = import ./alacritty args;
-  tmux = import ./tmux args;
+  cockpit = import ./cockpit args;
+  firefox = import (homeOnly ./firefox) args;
+  gui-home = import (homeOnly ./gui/home) args;
+  gui-system = import (systemOnly ./gui/system) args;
+  LD = import (systemOnly ./LD) args;
+  samba = import ./samba args;
   shell = import ./shell args;
+  thunar = import (homeOnly ./thunar) args;
+  tmux = import ./tmux args;
+  wol = import (systemOnly ./wol) args;
+  wsl = import ./wsl args;
 }

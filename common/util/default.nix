@@ -1,35 +1,44 @@
-inputs: with builtins; rec {
+inputs:
+with builtins; rec {
+  linkFarmPair = name: path: {inherit name path;};
 
-  linkFarmPair =
-    name:
-    path:
-    { inherit name path; };
-
-  eachSystem = with builtins; systems: f:
-    let
+  eachSystem = with builtins;
+    systems: f: let
       # Merge together the outputs for all systems.
-      op = attrs: system:
-        let
-          ret = f system;
-          op = attrs: key: attrs //
-              {
-                ${key} = (attrs.${key} or { })
-                  // { ${system} = ret.${key}; };
-              }
-          ;
-        in
+      op = attrs: system: let
+        ret = f system;
+        op = attrs: key:
+          attrs
+          // {
+            ${key} =
+              (attrs.${key} or {})
+              // {${system} = ret.${key};};
+          };
+      in
         foldl' op attrs (attrNames ret);
     in
-    foldl' op { }
+      foldl' op {}
       (systems
         ++ # add the current system if --impure is used
-          (if builtins ? currentSystem then
-             if elem currentSystem systems
-             then []
-             else [ currentSystem ]
-          else []));
+        (
+          if builtins ? currentSystem
+          then
+            if elem currentSystem systems
+            then []
+            else [currentSystem]
+          else []
+        ));
 
-  mkRecBuilder = { src ? "$src", outdir ? "$out", action ? "cp $1 $2", ... }: /* bash */''
+  mkRecBuilder = {
+    src ? "$src",
+    outdir ? "$out",
+    action ? "cp $1 $2",
+    ...
+  }:
+  /*
+  bash
+  */
+  ''
     builder_file_action() {
       ${action}
     }
@@ -52,107 +61,85 @@ inputs: with builtins; rec {
     dirloop ${src} ${outdir} builder_file_action
   '';
 
-  compile_lua_dir = {
-    name ? "REPLACE_ME",
-    LUA_SRC,
-    CPATH_DIR ? null,
-    lua_interpreter,
-    lua_packages ? (_:[]),
-    extraLuaPackages ? (_:[]),
-    miscNixVals ? {},
-    toLua ? null,
-    mkDerivation,
-    ...
-    }: let
-    luaFileAction = /*bash*/''
-      local file=$1
-      local outdir=$2
-      shift 2
-      echo "$@" "$(basename "$file")"
-      if [[ "$file" == *.lua ]]; then
-        if [ -e "${lua_interpreter}/bin/luajit" ]; then
-          ${lua_interpreter}/bin/luajit -b "$file" -d "$outdir/$(basename "$file")" || cp -f "$file" "$outdir"
-        else
-          ${lua_interpreter}/bin/luac -o "$outdir/$(basename "$file")" "$file" || cp -f "$file" "$outdir"
-        fi
-      else
-        cp -f "$file" "$outdir"
-      fi
-    '';
-    env_path = head (split "[\/][?]" (head lua_interpreter.LuaPathSearchPaths));
-    env_cpath = head (split "[\/][?]" (head lua_interpreter.LuaCPathSearchPaths));
-    nixluavals = if isFunction toLua then toLua miscNixVals else "";
-    mknixluavals = ''echo 'return ${nixluavals}' > $out/${env_path}/NIX_${name}_VALUES.lua'';
-    app = mkDerivation (finalAttrs: {
-      inherit name;
-      src = LUA_SRC;
-      dontUnpack = true;
-      propagatedBuildInputs = (lua_packages lua_interpreter.pkgs) ++ (extraLuaPackages lua_interpreter.pkgs);
-      buildPhase = ''
-        runHook preBuild
-        ${mkRecBuilder { action = luaFileAction; src = "$src"; outdir = "$out/${env_path}"; }}
-        ${if isFunction toLua then mknixluavals else ""}
-        ${if CPATH_DIR == null then "" else ''
-          mkdir -p $out/${env_cpath}
-          cp -r ${CPATH_DIR}/* $out/${env_cpath}
-        ''}
-        runHook postBuild
-      '';
-    });
-  in lua_interpreter.pkgs.luaLib.toLuaModule app;
+  # getSopsKeys = user: builtins.map (name: "/home/${user}/.ssh/${name}") ["gopsing-merry" "thousand-sunny" "polar-tang"];
 
-  mkLuaApp = callPackage: arguments: let
-    mkLuaAppWcallPackage = {
-      lib
-      , stdenv
-      , makeWrapper
-      , lua5_2
-      # args below:
-      , LUA_SRC
-      , CPATH_DIR ? null
-      , lua_interpreter ? lua5_2
-      , lua_packages ? (_:[])
-      , extraLuaPackages ? (_:[])
-      , APPNAME ? "REPLACE_ME"
-      , wrapperArgs ? []
-      , miscNixVals ? {}
-      , toLua ? null
-      , ...
-    }: let
-      compiled = lib.makeOverridable compile_lua_dir {
-        name = APPNAME;
-        inherit (stdenv) mkDerivation;
-        inherit lua_interpreter lua_packages extraLuaPackages LUA_SRC CPATH_DIR miscNixVals toLua;
-      };
-      app_final = stdenv.mkDerivation (let
-        luaEnv = compiled.luaModule.withPackages (_: [ compiled ]);
-      in {
-        name = APPNAME;
-        src = compiled;
-        nativeBuildInputs = [ makeWrapper ];
-        propagatedBuildInputs = [ compiled ];
-        passthru = {
-          inherit luaEnv;
-          unwrapped = compiled;
-        };
-        buildPhase = let
-          binarypath = if pathExists "${luaEnv}/bin/luajit" then "${luaEnv}/bin/luajit" else "${luaEnv}/bin/lua";
-        in /*bash*/''
-          runHook preBuild
-          mkdir -p $out/bin
-          cat > $out/bin/${APPNAME} <<EOFTAG_LUA
-          #!${binarypath}
-          require([[${APPNAME}]])
-          EOFTAG_LUA
-          chmod +x $out/bin/${APPNAME}
-          runHook postBuild
-        '';
-        postFixup = /*bash*/''
-          wrapProgram $out/bin/${APPNAME} ${concatStringsSep " " wrapperArgs}
-        '';
-      });
-    in
-    lua_interpreter.pkgs.luaLib.toLuaModule app_final;
-  in callPackage mkLuaAppWcallPackage (arguments // { toLua = inputs.nixToLua.prettyNoModify; });
+  # use path relative to the root of the project
+  relativeToRoot = lib.path.append ../.;
 
+  # # Get a list of .nix files in the directory "path"
+  # scanPaths = path: let
+  #   excludeDirs = [
+  #     #"modules"
+  #     "packages"
+  #     "pkgs"
+  #     "scripts"
+  #     "settings"
+  #     "systemd"
+  #   ];
+  #
+  #   excludeNamePrefix = [
+  #     "_"
+  #   ];
+  #
+  #   excludeNameSuffix = [
+  #     "_settings"
+  #     "_module"
+  #   ];
+  #
+  #   filterDir = path: builtins.all (dir: path != dir) excludeDirs;
+  #   filterFileSuffix = path: builtins.all (suffix: !lib.strings.hasSuffix "${suffix}.nix" path) excludeNameSuffix;
+  #   filterFilePrefix = path: builtins.all (prefix: !lib.strings.hasPrefix "${prefix}" path) excludeNamePrefix;
+  # in
+  #   builtins.map
+  #   (f: (path + "/${f}"))
+  #   (builtins.attrNames
+  #     (lib.attrsets.filterAttrs
+  #       (
+  #         path: _type:
+  #           (
+  #             _type
+  #             == "directory" # include directories
+  #             && filterDir path # filter excluded dirs
+  #           )
+  #           || (
+  #             (path != "default.nix") # ignore default.nix
+  #             && (filterFileSuffix path) # ignore *settings.nix files
+  #             && (filterFilePrefix path) # ignore files starting with exluded prefixes
+  #             && (lib.strings.hasSuffix ".nix" path) # include .nix files
+  #           )
+  #       )
+  #       (builtins.readDir path)));
+
+  operateOnFiles = path: op:
+    builtins.map
+    (f: (op (path + "/${f}")))
+    (builtins.attrNames
+      (
+        lib.attrsets.filterAttrs
+        (
+          _path: _type: (
+            _type
+            != "directory"
+          )
+        )
+        (builtins.readDir path)
+      ));
+
+  # Get a list of strings containing the contents of each file
+  # in a directory
+  readFiles = path: operateOnFiles path (f: builtins.readFile f);
+
+  sourceFiles = path: operateOnFiles path (f: "source ${f}");
+
+  # merge list of strings using a seperator
+  writeLines = {
+    lines,
+    sep ? "\n",
+  }:
+    lib.concatStringsSep sep lines;
+
+  # use callPackage
+  backup_rotator = ./backup_rotator.nix;
+
+  inherit (import ./mkLuaStuff.nix {inherit mkRecBuilder inputs;}) compile_lua_dir mkLuaApp;
 }

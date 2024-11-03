@@ -12,11 +12,7 @@ importName: inputs: let
 in
 overlay
 */
-{
-  inputs,
-  birdeeutils,
-  ...
-}: let
+{inputs, ...}: let
   overlaySetPre = {
     # this is how you would add another overlay file
     # for if your customBuildsOverlay gets too long

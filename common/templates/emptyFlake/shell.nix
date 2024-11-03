@@ -1,7 +1,12 @@
-{ shellPkg, APPNAME, mkShell, ... }: let
-# dev shells should not contain the final program.
-# They should have the environment
-# needed to BUILD (and run) the final program.
+{
+  shellPkg,
+  APPNAME,
+  mkShell,
+  ...
+}: let
+  # dev shells should not contain the final program.
+  # They should have the environment
+  # needed to BUILD (and run) the final program.
   DEVSHELL = mkShell {
     packages = [];
     inputsFrom = [];
@@ -12,4 +17,4 @@
     '';
   };
 in
-DEVSHELL
+  DEVSHELL

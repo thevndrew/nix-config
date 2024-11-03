@@ -42,9 +42,6 @@ in {
     tmux.enable = true;
     firefox.enable = true;
     thunar.enable = true;
-    ranger = {
-      enable = true;
-    };
   };
 
   nix.gc = {
@@ -110,9 +107,8 @@ in {
   };
 
   nix.registry = {
-    nixpkgs.flake = inputs.nixpkgs-unstable;
+    # nixpkgs.flake = inputs.nixpkgs-unstable;
     home-manager.flake = inputs.home-manager;
-    birdeeSystems.flake = self;
     gomod2nix.to = {
       type = "github";
       owner = "nix-community";
@@ -124,20 +120,19 @@ in {
     enable = true;
     userDirs = {
       enable = true;
-      desktop = "${config.home.homeDirectory}/Desktop";
-      documents = "${config.home.homeDirectory}/Documents";
-      download = "${config.home.homeDirectory}/Downloads";
-      music = "${config.home.homeDirectory}/Music";
-      pictures = "${config.home.homeDirectory}/Pictures";
-      publicShare = "${config.home.homeDirectory}/Public";
-      templates = "${config.home.homeDirectory}/Templates";
-      videos = "${config.home.homeDirectory}/Videos";
+      desktop = "${config.home.homeDirectory}/desktop";
+      documents = "${config.home.homeDirectory}/documents";
+      download = "${config.home.homeDirectory}/downloads";
+      music = "${config.home.homeDirectory}/music";
+      pictures = "${config.home.homeDirectory}/pictures";
+      publicShare = "${config.home.homeDirectory}/public";
+      templates = "${config.home.homeDirectory}/templates";
+      videos = "${config.home.homeDirectory}/videos";
       extraConfig = {
-        XDG_MISC_DIR = "${config.home.homeDirectory}/Misc";
+        XDG_MISC_DIR = "${config.home.homeDirectory}/misc";
       };
     };
     mimeApps.defaultApplications = {
-      "inode/directory" = ["ranger.desktop"];
       "application/pdf" = ["firefox.desktop" "draw.desktop" "gimp.desktop"];
     };
   };
@@ -165,30 +160,16 @@ in {
     # (pkgs.nerdfonts.override { fonts = [ "FantasqueSansMono" ]; })
 
     #
-    nops # manix fzf alias
+    # nops # manix fzf alias
     dep-tree
     minesweeper
-    #
-
-    ffuf
-    nmap
-    sqlmap
-    burpsuite
-    zap
-    metasploit
-    bettercap
-    openvpn
-    openconnect
-    snort
-    ghidra
 
     fira-code
     openmoji-color
     noto-fonts-emoji
     (nerdfonts.override {fonts = ["FiraMono" "Go-Mono"];})
 
-    dislocker
-    ueberzugpp
+    # ueberzugpp
     vlc
     nix-tree
     xfce.ristretto
@@ -280,30 +261,6 @@ in {
     remmina
     ventoy-full
   ];
-
-  # fonts.fontconfig.enable = true;
-  # qt.platformTheme.name = "gtk3";
-  # qt.enable = true;
-  # qt.style.package = pkgs.adwaita-qt;
-  # qt.style.name = "adwaita-dark";
-  # gtk.enable = true;
-  #
-  # gtk.cursorTheme.package = pkgs.phinger-cursors;
-  # gtk.cursorTheme.name = "phinger-cursors";
-  #
-  # home.pointerCursor.package = pkgs.phinger-cursors;
-  # home.pointerCursor.name = "phinger-cursors";
-  #
-  # gtk.theme.package = pkgs.adw-gtk3;
-  # gtk.theme.name = "adw-gtk3-dark";
-
-  # gtk.gtk3.extraCss = '''';
-  # gtk.gtk3.extraConfig = {};
-  # gtk.gtk4.extraCss = '''';
-  # gtk.gtk4.extraConfig = {};
-
-  # gtk.iconTheme.package = pkgs.beauty-line-icon-theme;
-  # gtk.iconTheme.name = "BeautyLine";
 
   # Home Manager is pretty good at managing dotfiles. The primary way to manage
   # plain files is through 'home.file'.
