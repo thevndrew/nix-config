@@ -12,48 +12,40 @@
   users,
   hostname,
   system-modules,
+  isDesktop,
+  isWSL,
+  user,
   ...
-}: let
-in {
+}: {
   imports = with system-modules; [
     vndrew-nvim
-    alacritty
+    # alacritty
     shell.bash
     shell.zsh
-    shell.fish
     LD
+    ./virtualisation.nix
+    ./networking.nix
   ];
+
+  users.users = users.users;
+
+  vndrewMods = {
+    # zsh.enable = true;
+    # bash.enable = true;
+    LD.enable = true;
+    cockpit.enable = !isWSL;
+    gui-system.enable = isDesktop;
+    wsl.enable = isWSL;
+    samba.sharing.enable = !isWSL;
+    samba.storage.enable = hostname == "thousand-sunny";
+  };
 
   vndrew-nvim = {
     enable = true;
     packageNames = ["nvim-nightly"];
   };
 
-  nix.settings = {
-    # bash-prompt-prefix = "✓";
-    trusted-substituters = [
-      "https://nix-community.cachix.org"
-    ];
-    trusted-public-keys = [
-      "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
-    ];
-  };
-  nix.extraOptions = ''
-    !include /home/birdee/.secrets/gitoke
-  '';
-  # nix.extraOptions = ''
-  #   plugin-files = ${pkgs.nix-plugins}/lib/nix/plugins
-  # '';
-
-  users.users = users.users;
-  birdeeMods = {
-    zsh.enable = true;
-    bash.enable = true;
-    LD.enable = true;
-  };
-
-  boot.kernelModules = ["kvm-amd" "kvm-intel"];
-  virtualisation.libvirtd.enable = true;
+  # boot.kernelModules = ["kvm-amd" "kvm-intel"];
 
   services.clamav = {
     daemon.enable = true;
@@ -68,12 +60,12 @@ in {
     l = "lsd -alh";
   };
 
-  # Bootloader.
-  boot.loader.timeout = 3;
-  boot.loader.systemd-boot.editor = false;
-  boot.loader.systemd-boot.configurationLimit = 50;
-  boot.loader.systemd-boot.enable = true;
-  boot.loader.efi.canTouchEfiVariables = true;
+  # # Bootloader.
+  # boot.loader.timeout = 3;
+  # boot.loader.systemd-boot.editor = false;
+  # boot.loader.systemd-boot.configurationLimit = 50;
+  # boot.loader.systemd-boot.enable = true;
+  # boot.loader.efi.canTouchEfiVariables = true;
 
   networking.hostName = hostname; # Define your hostname.
   # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
@@ -85,8 +77,27 @@ in {
   # Enable networking
   networking.networkmanager.enable = true;
 
-  # Set your time zone.
-  time.timeZone = "America/Los_Angeles";
+  security.sudo.enable = true;
+  security.sudo.wheelNeedsPassword = false;
+
+  time.timeZone = "America/New_York";
+
+  fonts.enableDefaultPackages = true;
+
+  programs = {
+    zsh.enable = true;
+
+    nh = {
+      enable = true;
+      package = pkgs.unstable.nh;
+      clean = {
+        enable = true;
+        dates = "weekly";
+        extraArgs = "--keep 3 --keep-since 7d";
+      };
+      flake = "/home/${user}/nix-config";
+    };
+  };
 
   # Select internationalisation properties.
   i18n.defaultLocale = "en_US.UTF-8";
@@ -105,16 +116,6 @@ in {
 
   # Allow unfree packages
   nixpkgs.config.allowUnfree = true;
-  # Allow flakes and new command
-  nix.settings.experimental-features = ["nix-command" "flakes"];
-  nix.settings.auto-optimise-store = true;
-
-  # nix.gc = {
-  #   automatic = true;
-  #   dates = "weekly";
-  #   options = "-d";
-  #   persistent = true;
-  # };
 
   # hardware.bluetooth.enable = true; # enables support for Bluetooth
   # hardware.bluetooth.powerOnBoot = true; # powers up the default Bluetooth controller on boot
@@ -131,51 +132,6 @@ in {
 
   users.defaultUserShell = pkgs.zsh;
 
-  # List packages installed in system profile. To search, run:
-  # $ nix search wget
-  environment.systemPackages = let
-  in
-    with pkgs; [
-      # vim # Do not forget to add an editor to edit configuration.nix! The Nano editor is also installed by default.
-      hplip
-      qemu
-      fuse
-      fuse3
-      parted
-      gparted
-      sshfs-fuse
-      socat
-      nix-output-monitor
-      screen
-      tcpdump
-      sdparm
-      hdparm
-      smartmontools # for diagnosing hard disks
-      nix-info
-      pciutils
-      lm_sensors
-      usbutils
-      nvme-cli
-      unzip
-      zip
-      vagrant
-      exfat
-      exfatprogs
-      lshw
-      lsd
-      bat
-      wget
-      tree
-      zip
-      _7zz
-      unzip
-      git
-      ntfs3g
-      dislocker
-      man-pages
-      man-pages-posix
-    ];
-
   # Some programs need SUID wrappers, can be configured further or are
   # started in user sessions.
   # programs.mtr.enable = true;
@@ -183,6 +139,121 @@ in {
     enable = true;
     pinentryPackage = pkgs.pinentry-curses;
     enableSSHSupport = true;
+  };
+
+  environment = {
+    enableAllTerminfo = true;
+
+    # Add ~/.local/bin to PATH
+    localBinInPath = true;
+
+    pathsToLink = [
+      "/share/bash-completion"
+      "/share/zsh"
+    ];
+
+    shells = [pkgs.zsh];
+
+    # List packages installed in system profile. To search, run:
+    # $ nix search wget
+    systemPackages = with pkgs; [
+      mergerfs
+      tmux
+      neovim
+      git
+      ethtool
+    ];
+  };
+
+  nix = {
+    registry = {
+      nixpkgs = {
+        flake = inputs.nixpkgs;
+      };
+    };
+
+    nixPath = [
+      "nixpkgs=${inputs.nixpkgs.outPath}"
+    ];
+
+    optimise = {
+      automatic = true;
+      dates = ["daily"];
+    };
+
+    settings = {
+      accept-flake-config = true;
+      auto-optimise-store = true;
+      builders-use-substitutes = true;
+
+      experimental-features = ["nix-command" "flakes"];
+
+      substituters = [
+        "https://nix-community.cachix.org"
+      ];
+
+      trusted-public-keys = [
+        "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
+      ];
+
+      extra-substituters = [
+        "https://anyrun.cachix.org"
+        "https://hyprland.cachix.org"
+      ];
+
+      extra-trusted-public-keys = [
+        "anyrun.cachix.org-1:pqBobmOjI7nKlsUMV25u9QHa9btJK65/C8vnO3p346s="
+        "hyprland.cachix.org-1:a7pgxzMz7+chwVL3/pzj6jIBMioiJM7ypFP8PwtkuGc="
+      ];
+
+      warn-dirty = false;
+    };
+
+    gc = {
+      automatic = false; # using nh clean instead
+      dates = "weekly";
+      options = "--delete-older-than 7d";
+      # options = "-d";
+      # persistent = true;
+    };
+  };
+
+  programs.nix-ld.enable = true;
+
+  services = {
+    openssh = {
+      enable = true;
+      settings.PasswordAuthentication = false;
+      settings.PermitRootLogin = "yes";
+      ports = [22 2222];
+    };
+
+    tailscale = {
+      enable = true;
+      package = pkgs.unstable.tailscale;
+      useRoutingFeatures = "both";
+    };
+
+    vnstat.enable = true;
+
+    resolved = {
+      enable = false;
+      fallbackDns = [
+        "100.100.100.100"
+        "9.9.9.9"
+      ];
+      domains = [
+        "ainu-kanyu.ts.net"
+      ];
+    };
+  };
+
+  sops = lib.mkIf (!isWSL) {
+    defaultSopsFile = "${inputs.mysecrets}/secrets/nix.yaml";
+    age.sshKeyPaths = "/home/${user}/.ssh/${hostname}";
+    secrets."passwords/${user}" = {
+      neededForUsers = true;
+    };
   };
 
   # List services that you want to enable:

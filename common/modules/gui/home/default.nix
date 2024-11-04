@@ -20,7 +20,7 @@
 
   inherit (pkgs) unstable;
 in {
-  imports = utils.scanPaths ./.;
+  imports = ./terminals.nix;
 
   _file = ./default.nix;
 

@@ -18,6 +18,7 @@ in {
 
   config = lib.mkIf cfg.enable {
     virtualisation = {
+      libvirtd.enable = true;
       containers = {
         enable = true;
         containersConf = {

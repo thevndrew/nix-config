@@ -9,11 +9,6 @@
 } @ inputs: let
   # NOTE: setup
   flake-path = "/home/andrew/nix-config";
-  other-pkgs = {
-    inputs,
-    pkgs,
-  }: {
-  };
 
   stateVersion = "23.11";
 
@@ -44,6 +39,9 @@
         vndrew = inputs.nixpkgs-vndrew.packages.${final.system};
         secret = inputs.nixpkgs-secret.packages.${final.system};
       })
+
+      inputs.nur.overlay
+      inputs.zig.overlays.default
     ];
 
   # factor out declaring home manager as a module for configs that do that
@@ -52,6 +50,10 @@
     monitorCFG ? null,
     username,
     hmCFGmodMAIN,
+    isWSL ? false,
+    isDesktop ? false,
+    isStandalone ? false,
+    hostname,
   }: {
     pkgs,
     lib,
@@ -60,7 +62,7 @@
     nixpkgs.overlays = overlayList;
     home-manager.useGlobalPkgs = true;
     home-manager.useUserPackages = true;
-    home-manager.users.vndrew = hmCFGmodMAIN; # import ./homes/vndrew.nix;
+    home-manager.users.andrew = hmCFGmodMAIN;
     home-manager.backupFileExtension = "hm-bkp";
     home-manager.verbose = true;
     home-manager.extraSpecialArgs = {
@@ -71,12 +73,18 @@
         inputs
         home-modules
         flake-path
-        username # username = "vndrew";
+        username
         users
         monitorCFG
         utils
         ;
     };
+    home-manager.sharedModules = [
+      inputs.ags.homeManagerModules.default
+      inputs.anyrun.homeManagerModules.default
+      inputs.sops-nix.homeManagerModules.sops
+      inputs.nix-index-database.hmModules.nix-index
+    ];
   };
 in
   # NOTE: flake parts definitions
@@ -103,7 +111,7 @@ in
         "vndrew@nestOS" = diskoCFG.PCs.sda_swap;
         "vndrew@dustbook" = diskoCFG.PCs.sda_swap;
       };
-      overlays = overlaySet // vndrew-nvim.overlays // {};
+      overlays = overlaySet // vndrew-nvim.overlays;
       nixosModules = system-modules;
       homeModules = home-modules;
       inherit vndrew-nvim flakeModules templates utils;
@@ -126,6 +134,8 @@ in
           allowUnfree = true;
         };
       };
+
+      # formatter.${system} = nixpkgs.legacyPackages.${system}.alejandra;
 
       # overlayAttrs = { outname = config.packages.packagename; }; # Only with easyOverlay imported
 
@@ -164,9 +174,9 @@ in
       homeConfigurations = let
         users = userdata pkgs;
       in {
-        "vndrew@dustbook" = home-manager.lib.homeManagerConfiguration {
+        "andrew@dustbook" = home-manager.lib.homeManagerConfiguration {
           extraSpecialArgs = {
-            username = "vndrew";
+            username = "andrew";
             my_pkgs = packages_func system;
             inherit
               stateVersion
@@ -181,7 +191,7 @@ in
           };
           inherit pkgs;
           modules = [
-            ./homes/vndrew.nix
+            ./homes/andrew.nix
             (
               {pkgs, ...}: {
                 nix.package = pkgs.nix;
@@ -189,9 +199,9 @@ in
             )
           ];
         };
-        "vndrew@nestOS" = home-manager.lib.homeManagerConfiguration {
+        "andrew@nestOS" = home-manager.lib.homeManagerConfiguration {
           extraSpecialArgs = {
-            username = "vndrew";
+            username = "andrew";
             monitorCFG = ./homes/monitors_by_hostname/nestOS;
             my_pkgs = packages_func system;
             inherit
@@ -255,7 +265,7 @@ in
             ./systems/PCs/aSUS
             (HMasModule {
               monitorCFG = ./homes/monitors_by_hostname/nestOS;
-              username = "vndrew";
+              username = "andrew";
               inherit users;
               hmCFGmodMAIN = import ./homes/main;
             })
@@ -424,151 +434,98 @@ in
             ./systems/installers/installer
           ];
         };
+
+        going-merry = nixpkgs.lib.nixosSystem {
+          specialArgs = {
+            hostname = "going-merry";
+            my_pkgs = packages_func system;
+            inherit
+              stateVersion
+              users
+              self
+              inputs
+              system-modules
+              flake-path
+              utils
+              ;
+            user = "andrew";
+          };
+          inherit system;
+          modules = [
+            home-manager.nixosModules.home-manager
+            inputs.sops-nix.nixosModules.sops
+            ./systems/PCs/going-merry
+            (HMasModule {
+              username = "andrew";
+              inherit users;
+              hmCFGmodMAIN = import ./homes/andrew.nix;
+              hostname = "going-merry";
+            })
+          ];
+        };
+
+        thousand-sunny = nixpkgs.lib.nixosSystem {
+          specialArgs = {
+            hostname = "thousand-sunny";
+            my_pkgs = packages_func system;
+            inherit
+              stateVersion
+              users
+              self
+              inputs
+              system-modules
+              flake-path
+              utils
+              ;
+            user = "andrew";
+            isDesktop = true;
+          };
+          inherit system;
+          modules = [
+            home-manager.nixosModules.home-manager
+            inputs.sops-nix.nixosModules.sops
+            ./systems/PCs/thousand-sunny
+            (HMasModule {
+              username = "andrew";
+              inherit users;
+              hmCFGmodMAIN = import ./homes/andrew.nix;
+              isDesktop = true;
+              hostname = "thousand-sunny";
+            })
+          ];
+        };
+
+        polar-tang = nixpkgs.lib.nixosSystem {
+          specialArgs = {
+            hostname = "polar-tang";
+            # my_pkgs = packages_func system;
+            inherit
+              stateVersion
+              users
+              self
+              inputs
+              system-modules
+              flake-path
+              utils
+              ;
+            user = "andrew";
+            isWSL = true;
+          };
+          inherit system;
+          modules = [
+            home-manager.nixosModules.home-manager
+            inputs.sops-nix.nixosModules.sops
+            inputs.nixos-wsl.nixosModules.default
+            ./systems/PCs/polar-tang
+            (HMasModule {
+              username = "andrew";
+              inherit users;
+              hmCFGmodMAIN = import ./homes/andrew.nix;
+              isWSL = true;
+              hostname = "polar-tang";
+            })
+          ];
+        };
       };
     };
   }
-#   modules = [
-#     # Bring in WSL if this is a WSL build
-#     (
-#       if isWSL
-#       then inputs.nixos-wsl.nixosModules.default
-#       else {}
-#     )
-#
-# # home-manager = inputs.home-manager.nixosModules;
-# # sops-nix = inputs.sops-nix.nixosModules;
-#     sops-nix.sops
-#     home-manager.home-manager
-#     {
-#       home-manager = {
-#         useGlobalPkgs = true;
-#         useUserPackages = true;
-#         extraSpecialArgs = moduleArgs;
-#         sharedModules = [
-#           inputs.ags.homeManagerModules.default
-#           inputs.anyrun.homeManagerModules.default
-#           inputs.sops-nix.homeManagerModules.sops
-#           inputs.nix-index-database.hmModules.nix-index
-#           inputs.vndrew-nvim.homeModule
-#         ];
-#         users.${user} = import userHMConfig;
-#       };
-#     }
-#   ];
-# outputs = {
-#   self,
-#   nixpkgs,
-#   nixpkgs-unstable,
-#   home-manager,
-#   ...
-# } @ inputs: let
-#   system = "x86_64-linux";
-#
-#   overlays = [
-#     inputs.nur.overlay
-#     inputs.zig.overlays.default
-#   ];
-#
-#   pkgs = import nixpkgs {
-#     inherit system;
-#     config = {
-#       allowUnfree = true;
-#     };
-#   };
-#
-#   other-pkgs = {
-#     nix-alien = inputs.nix-alien.packages.${pkgs.system};
-#
-#     unstable = import inputs.nixpkgs-unstable {
-#       inherit system;
-#       config = {
-#         allowUnfree = true;
-#       };
-#     };
-#
-#     vndrew = inputs.nixpkgs-vndrew.packages.${pkgs.system};
-#     secret = inputs.nixpkgs-secret.packages.${pkgs.system};
-#   };
-#
-#   mylib = import ./lib/mylib.nix {inherit (nixpkgs) lib;};
-#
-#   mkSystem = import ./lib/mksystem.nix {
-#     inherit nixpkgs overlays inputs pkgs other-pkgs mylib;
-#   };
-#
-#   homeManagerSetup = {
-#     hostname,
-#     user,
-#   }: (
-#     let
-#       systemInfo = {
-#         home = "/home/${user}";
-#         inherit hostname;
-#         inherit user;
-#         arch = system;
-#       };
-#
-#       moduleArgs = {
-#         isDesktop = false;
-#         isWSL = true;
-#         isStandalone = true;
-#         sopsKeys = mylib.getSopsKeys user;
-#         inherit inputs;
-#         inherit mylib;
-#         inherit other-pkgs;
-#         inherit systemInfo;
-#       };
-#     in
-#       home-manager.lib.homeManagerConfiguration {
-#         inherit pkgs;
-#         extraSpecialArgs = moduleArgs;
-#         modules = [
-#           inputs.nix-index-database.hmModules.nix-index
-#           inputs.sops-nix.homeManagerModules.sops
-#           inputs.vndrew-nvim.homeModule
-#           ./users/${user}/home
-#         ];
-#       }
-#   );
-# in {
-#   nixosConfigurations = {
-#     going-merry = mkSystem "going-merry" {
-#       inherit system;
-#       user = "andrew";
-#     };
-#
-#     thousand-sunny = mkSystem "thousand-sunny" {
-#       inherit system;
-#       user = "andrew";
-#       desktop = true;
-#     };
-#
-#     polar-tang = mkSystem "polar-tang" {
-#       inherit system;
-#       user = "andrew";
-#       wsl = true;
-#     };
-#   };
-#
-#   formatter.${system} = nixpkgs.legacyPackages.${system}.alejandra;
-#
-#   homeConfigurations = {
-#     andrew = homeManagerSetup {
-#       hostname = "polar-tang";
-#       user = "andrew";
-#     };
-#   };
-#
-#   devShells.${system} = {
-#     default = pkgs.mkShell {
-#       nativeBuildInputs = with other-pkgs.unstable; [
-#         alejandra
-#         deadnix
-#         just
-#         nixd
-#         statix
-#       ];
-#     };
-#   };
-# };
-
