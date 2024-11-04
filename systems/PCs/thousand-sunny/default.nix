@@ -79,9 +79,6 @@
   users.users.${systemInfo.user}.extraGroups = ["wheel" "podman" "storage" "input"];
 
   networking = {
-    hostName = systemInfo.hostname;
     hostId = "4a219e7f";
   };
-
-  system.stateVersion = "23.11"; # Did you read the comment?
 }

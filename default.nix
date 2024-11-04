@@ -77,6 +77,10 @@
         users
         monitorCFG
         utils
+        isWSL
+        isDesktop
+        isStandalone
+        hostname
         ;
     };
     home-manager.sharedModules = [
@@ -94,7 +98,7 @@ in
     systems = nixpkgs.lib.platforms.all;
     imports = [
       # inputs.flake-parts.flakeModules.easyOverlay
-      inputs.devenv.flakeModule
+      # inputs.devenv.flakeModule
       flakeModules.nixosCFGperSystem
       flakeModules.homeCFGperSystem
       flakeModules.appImagePerSystem
@@ -102,15 +106,15 @@ in
       # e.g. treefmt-nix.flakeModule
     ];
     flake = {
-      diskoConfigurations = {
-        sda_swap = diskoCFG.PCs.sda_swap;
-        sdb_swap = diskoCFG.PCs.sdb_swap;
-        dustbook = diskoCFG.PCs.sda_swap;
-        nestOS = diskoCFG.PCs.sda_swap;
-        "vmware-vm" = diskoCFG.VMs.vmware_bios;
-        "vndrew@nestOS" = diskoCFG.PCs.sda_swap;
-        "vndrew@dustbook" = diskoCFG.PCs.sda_swap;
-      };
+      # diskoConfigurations = {
+      #   sda_swap = diskoCFG.PCs.sda_swap;
+      #   sdb_swap = diskoCFG.PCs.sdb_swap;
+      #   dustbook = diskoCFG.PCs.sda_swap;
+      #   nestOS = diskoCFG.PCs.sda_swap;
+      #   "vmware-vm" = diskoCFG.VMs.vmware_bios;
+      #   "vndrew@nestOS" = diskoCFG.PCs.sda_swap;
+      #   "vndrew@dustbook" = diskoCFG.PCs.sda_swap;
+      # };
       overlays = overlaySet // vndrew-nvim.overlays;
       nixosModules = system-modules;
       homeModules = home-modules;
@@ -136,8 +140,6 @@ in
       };
 
       # formatter.${system} = nixpkgs.legacyPackages.${system}.alejandra;
-
-      # overlayAttrs = { outname = config.packages.packagename; }; # Only with easyOverlay imported
 
       packages =
         (packages_func system)
@@ -243,197 +245,197 @@ in
       nixosConfigurations = let
         users = userdata pkgs;
       in {
-        "vndrew@nestOS" = nixpkgs.lib.nixosSystem {
-          specialArgs = {
-            hostname = "nestOS";
-            my_pkgs = packages_func system;
-            inherit
-              stateVersion
-              self
-              inputs
-              users
-              system-modules
-              flake-path
-              utils
-              ;
-          };
-          inherit system;
-          modules = [
-            home-manager.nixosModules.home-manager
-            disko.nixosModules.disko
-            diskoCFG.PCs.sda_swap
-            ./systems/PCs/aSUS
-            (HMasModule {
-              monitorCFG = ./homes/monitors_by_hostname/nestOS;
-              username = "andrew";
-              inherit users;
-              hmCFGmodMAIN = import ./homes/main;
-            })
-          ];
-        };
-        "vndrew@dustbook" = nixpkgs.lib.nixosSystem {
-          specialArgs = {
-            hostname = "dustbook";
-            my_pkgs = packages_func system;
-            inherit
-              stateVersion
-              users
-              self
-              inputs
-              system-modules
-              flake-path
-              utils
-              ;
-          };
-          inherit system;
-          modules = [
-            home-manager.nixosModules.home-manager
-            disko.nixosModules.disko
-            diskoCFG.PCs.sda_swap
-            ./systems/PCs/dustbook
-            (HMasModule {
-              monitorCFG = ./homes/monitors_by_hostname/dustbook;
-              username = "vndrew";
-              inherit users;
-              hmCFGmodMAIN = import ./homes/vndrew.nix;
-            })
-          ];
-        };
-        "nestOS" = nixpkgs.lib.nixosSystem {
-          specialArgs = {
-            hostname = "nestOS";
-            my_pkgs = packages_func system;
-            inherit
-              stateVersion
-              self
-              inputs
-              users
-              system-modules
-              flake-path
-              utils
-              ;
-          };
-          inherit system;
-          modules = [
-            {nixpkgs.overlays = overlayList;}
-            disko.nixosModules.disko
-            diskoCFG.PCs.sda_swap
-            ./systems/PCs/aSUS
-          ];
-        };
-        "dustbook" = nixpkgs.lib.nixosSystem {
-          specialArgs = {
-            hostname = "dustbook";
-            my_pkgs = packages_func system;
-            inherit
-              stateVersion
-              self
-              inputs
-              users
-              system-modules
-              flake-path
-              utils
-              ;
-          };
-          inherit system;
-          modules = [
-            {nixpkgs.overlays = overlayList;}
-            disko.nixosModules.disko
-            diskoCFG.PCs.sda_swap
-            ./systems/PCs/dustbook
-          ];
-        };
-        "vmware-vm" = nixpkgs.lib.nixosSystem {
-          specialArgs = {
-            hostname = "virtbird";
-            my_pkgs = packages_func system;
-            inherit
-              stateVersion
-              self
-              inputs
-              users
-              system-modules
-              flake-path
-              utils
-              ;
-          };
-          inherit system;
-          modules = [
-            home-manager.nixosModules.home-manager
-            disko.nixosModules.disko
-            diskoCFG.VMs.vmware_bios
-            ./systems/VMs/vmware
-            (HMasModule {
-              username = "vndrew";
-              inherit users;
-              hmCFGmodMAIN = import ./homes/vndrew.nix;
-            })
-          ];
-        };
-        "my-qemu-vm" = nixpkgs.lib.nixosSystem {
-          specialArgs = {
-            hostname = "virtbird";
-            my_pkgs = packages_func system;
-            inherit
-              stateVersion
-              self
-              inputs
-              users
-              system-modules
-              flake-path
-              utils
-              ;
-          };
-          inherit system;
-          modules = [
-            home-manager.nixosModules.home-manager
-            ./systems/VMs/qemu
-            (HMasModule {
-              username = "vndrew";
-              inherit users;
-              hmCFGmodMAIN = import ./homes/vndrew.nix;
-            })
-          ];
-        };
-        "installer_mine" = inputs.nixpkgs-unstable.lib.nixosSystem {
-          specialArgs = {
-            hostname = "installer_mine";
-            is_minimal = true;
-            use_alacritty = true;
-            my_pkgs = packages_func system;
-            inherit
-              stateVersion
-              self
-              inputs
-              users
-              system-modules
-              flake-path
-              utils
-              ;
-          };
-          inherit system;
-          modules = [
-            {nixpkgs.overlays = overlayList;}
-            ./systems/installers/installer_mine
-            # home-manager.nixosModules.home-manager
-            # (HMasModule {
-            #   username = "vndrew";
-            #   inherit users;
-            #   hmCFGmodMAIN = import ./homes/vndrew.nix;
-            # })
-          ];
-        };
-        "installer" = inputs.nixpkgs-unstable.lib.nixosSystem {
-          specialArgs = {
-            my_pkgs = packages_func system;
-            inherit self inputs system-modules utils;
-          };
-          inherit system;
-          modules = [
-            {nixpkgs.overlays = overlayList;}
-            ./systems/installers/installer
-          ];
-        };
+        # "vndrew@nestOS" = nixpkgs.lib.nixosSystem {
+        #   specialArgs = {
+        #     hostname = "nestOS";
+        #     my_pkgs = packages_func system;
+        #     inherit
+        #       stateVersion
+        #       self
+        #       inputs
+        #       users
+        #       system-modules
+        #       flake-path
+        #       utils
+        #       ;
+        #   };
+        #   inherit system;
+        #   modules = [
+        #     home-manager.nixosModules.home-manager
+        #     disko.nixosModules.disko
+        #     diskoCFG.PCs.sda_swap
+        #     ./systems/PCs/aSUS
+        #     (HMasModule {
+        #       monitorCFG = ./homes/monitors_by_hostname/nestOS;
+        #       username = "andrew";
+        #       inherit users;
+        #       hmCFGmodMAIN = import ./homes/main;
+        #     })
+        #   ];
+        # };
+        # "vndrew@dustbook" = nixpkgs.lib.nixosSystem {
+        #   specialArgs = {
+        #     hostname = "dustbook";
+        #     my_pkgs = packages_func system;
+        #     inherit
+        #       stateVersion
+        #       users
+        #       self
+        #       inputs
+        #       system-modules
+        #       flake-path
+        #       utils
+        #       ;
+        #   };
+        #   inherit system;
+        #   modules = [
+        #     home-manager.nixosModules.home-manager
+        #     disko.nixosModules.disko
+        #     diskoCFG.PCs.sda_swap
+        #     ./systems/PCs/dustbook
+        #     (HMasModule {
+        #       monitorCFG = ./homes/monitors_by_hostname/dustbook;
+        #       username = "vndrew";
+        #       inherit users;
+        #       hmCFGmodMAIN = import ./homes/vndrew.nix;
+        #     })
+        #   ];
+        # };
+        # "nestOS" = nixpkgs.lib.nixosSystem {
+        #   specialArgs = {
+        #     hostname = "nestOS";
+        #     my_pkgs = packages_func system;
+        #     inherit
+        #       stateVersion
+        #       self
+        #       inputs
+        #       users
+        #       system-modules
+        #       flake-path
+        #       utils
+        #       ;
+        #   };
+        #   inherit system;
+        #   modules = [
+        #     {nixpkgs.overlays = overlayList;}
+        #     disko.nixosModules.disko
+        #     diskoCFG.PCs.sda_swap
+        #     ./systems/PCs/aSUS
+        #   ];
+        # };
+        # "dustbook" = nixpkgs.lib.nixosSystem {
+        #   specialArgs = {
+        #     hostname = "dustbook";
+        #     my_pkgs = packages_func system;
+        #     inherit
+        #       stateVersion
+        #       self
+        #       inputs
+        #       users
+        #       system-modules
+        #       flake-path
+        #       utils
+        #       ;
+        #   };
+        #   inherit system;
+        #   modules = [
+        #     {nixpkgs.overlays = overlayList;}
+        #     disko.nixosModules.disko
+        #     diskoCFG.PCs.sda_swap
+        #     ./systems/PCs/dustbook
+        #   ];
+        # };
+        # "vmware-vm" = nixpkgs.lib.nixosSystem {
+        #   specialArgs = {
+        #     hostname = "virtbird";
+        #     my_pkgs = packages_func system;
+        #     inherit
+        #       stateVersion
+        #       self
+        #       inputs
+        #       users
+        #       system-modules
+        #       flake-path
+        #       utils
+        #       ;
+        #   };
+        #   inherit system;
+        #   modules = [
+        #     home-manager.nixosModules.home-manager
+        #     disko.nixosModules.disko
+        #     diskoCFG.VMs.vmware_bios
+        #     ./systems/VMs/vmware
+        #     (HMasModule {
+        #       username = "vndrew";
+        #       inherit users;
+        #       hmCFGmodMAIN = import ./homes/vndrew.nix;
+        #     })
+        #   ];
+        # };
+        # "my-qemu-vm" = nixpkgs.lib.nixosSystem {
+        #   specialArgs = {
+        #     hostname = "virtbird";
+        #     my_pkgs = packages_func system;
+        #     inherit
+        #       stateVersion
+        #       self
+        #       inputs
+        #       users
+        #       system-modules
+        #       flake-path
+        #       utils
+        #       ;
+        #   };
+        #   inherit system;
+        #   modules = [
+        #     home-manager.nixosModules.home-manager
+        #     ./systems/VMs/qemu
+        #     (HMasModule {
+        #       username = "vndrew";
+        #       inherit users;
+        #       hmCFGmodMAIN = import ./homes/vndrew.nix;
+        #     })
+        #   ];
+        # };
+        # "installer_mine" = inputs.nixpkgs-unstable.lib.nixosSystem {
+        #   specialArgs = {
+        #     hostname = "installer_mine";
+        #     is_minimal = true;
+        #     use_alacritty = true;
+        #     my_pkgs = packages_func system;
+        #     inherit
+        #       stateVersion
+        #       self
+        #       inputs
+        #       users
+        #       system-modules
+        #       flake-path
+        #       utils
+        #       ;
+        #   };
+        #   inherit system;
+        #   modules = [
+        #     {nixpkgs.overlays = overlayList;}
+        #     ./systems/installers/installer_mine
+        #     # home-manager.nixosModules.home-manager
+        #     # (HMasModule {
+        #     #   username = "vndrew";
+        #     #   inherit users;
+        #     #   hmCFGmodMAIN = import ./homes/vndrew.nix;
+        #     # })
+        #   ];
+        # };
+        # "installer" = inputs.nixpkgs-unstable.lib.nixosSystem {
+        #   specialArgs = {
+        #     my_pkgs = packages_func system;
+        #     inherit self inputs system-modules utils;
+        #   };
+        #   inherit system;
+        #   modules = [
+        #     {nixpkgs.overlays = overlayList;}
+        #     ./systems/installers/installer
+        #   ];
+        # };
 
         going-merry = nixpkgs.lib.nixosSystem {
           specialArgs = {
@@ -498,7 +500,7 @@ in
         polar-tang = nixpkgs.lib.nixosSystem {
           specialArgs = {
             hostname = "polar-tang";
-            # my_pkgs = packages_func system;
+            my_pkgs = packages_func system;
             inherit
               stateVersion
               users

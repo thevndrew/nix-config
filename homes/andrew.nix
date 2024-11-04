@@ -299,8 +299,8 @@ in {
       nb = "nix build --json --no-link --print-build-logs";
       top_used = "fc -ln 0 | sort | uniq -c | sort -nr | head -20";
       dugood = ''${unstable.writeShellScript "dugood" ''du -hd1 $@ | sort -hr''}'';
-      get_secrets = "source ${get_secrets}/bin/get_secrets_key";
-      remove_secrets = "source ${remove_secrets}/bin/remove_secrets_key";
+      # get_secrets = "source ${get_secrets}/bin/get_secrets_key";
+      # remove_secrets = "source ${remove_secrets}/bin/remove_secrets_key";
     }
     // lib.optionalAttrs isWSL {
       pbcopy = "/mnt/c/Windows/System32/clip.exe";

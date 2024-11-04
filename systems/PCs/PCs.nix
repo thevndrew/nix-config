@@ -20,9 +20,9 @@
   imports = with system-modules; [
     vndrew-nvim
     # alacritty
-    shell.bash
-    shell.zsh
-    LD
+    # shell.bash
+    # shell.zsh
+    # LD
     ./virtualisation.nix
     ./networking.nix
   ];
