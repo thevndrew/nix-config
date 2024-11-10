@@ -194,6 +194,7 @@ in {
     # thunar.enable = true;
     gui-home.enable = isDesktop;
     gui-home.wm.enable = isDesktop;
+    gui-home.audio.enable = isDesktop;
   };
 
   nix.registry = {

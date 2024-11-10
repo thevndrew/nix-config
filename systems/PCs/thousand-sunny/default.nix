@@ -1,17 +1,28 @@
 {
-  mylib,
-  systemInfo,
+  lib,
+  system-modules,
+  username,
   ...
 }: {
-  imports = [
+  imports = with system-modules; [
+    ../PCs.nix
+
     # Include the results of the hardware scan.
     ./hardware-configuration.nix
-
-    # Setup WOL systemd service
-    (import (mylib.relativeToRoot "hosts/common/systemd/wol.nix") {
-      wolCommand = "ethtool -s eno1 wol g";
-    })
   ];
+
+  vndrewMods = {
+    samba = {
+      user = username;
+      sharing.enable = true;
+      storage.enable = true;
+      home = "/home/${username}";
+    };
+    wol = {
+      enable = true;
+      wolCommand = "ethtool -s eno1 wol g";
+    };
+  };
 
   # Use the systemd-boot EFI boot loader.
   boot = {
@@ -71,12 +82,13 @@
   powerManagement = {
     cpuFreqGovernor = "powersave";
     powertop.enable = true;
-    cpufreq.min = 800000; # 800 Mhz
-    cpufreq.max = 3400000; # 3.5 Ghz
+    cpufreq = {
+      min = 800000; # 800 Mhz
+      max = 3300000; # 3.3 Ghz
+    };
   };
 
   users.groups.storage = {gid = 1000;};
-  users.users.${systemInfo.user}.extraGroups = ["wheel" "podman" "storage" "input"];
 
   networking = {
     hostId = "4a219e7f";

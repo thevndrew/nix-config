@@ -168,7 +168,7 @@ in
 
       # NOTE: outputs to legacyPackages.${system}.homeConfigurations.<name>
       homeConfigurations = let
-        users = userdata {inherit pkgs config;};
+        users = userdata {inherit pkgs;};
       in {
         "andrew@dustbook" = home-manager.lib.homeManagerConfiguration {
           extraSpecialArgs = {
@@ -237,7 +237,7 @@ in
 
       # NOTE: outputs to legacyPackages.${system}.nixosConfigurations.<name>
       nixosConfigurations = let
-        users = userdata {inherit pkgs config;};
+        users = userdata {inherit pkgs;};
       in {
         "vndrew@nestOS" = nixpkgs.lib.nixosSystem {
           specialArgs = {

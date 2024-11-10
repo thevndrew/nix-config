@@ -30,8 +30,8 @@
   ];
 
   users.users =
-    users.users
-    // {
+    lib.recursiveUpdate users.users
+    {
       ${username}.hashedPasswordFile = config.sops.secrets."passwords/${username}".path;
       root.hashedPasswordFile = config.sops.secrets."passwords/${username}".path;
     };

@@ -31,14 +31,14 @@ in {
         description = "enable GUI related configuration";
       };
 
-      wm = lib.mkOption {
+      wm.enable = lib.mkOption {
         type = lib.types.bool;
         default = false;
         example = true;
         description = "enable Window Manager related configuration";
       };
 
-      audio = lib.mkOption {
+      audio.enable = lib.mkOption {
         type = lib.types.bool;
         default = false;
         example = true;
@@ -50,7 +50,7 @@ in {
   config = lib.mkIf cfg.enable {
     home.packages = with unstable; [
       (nerdfonts.override {fonts = ["FiraCode" "DroidSansMono" "JetBrainsMono"];})
-      other-pkgs.secret.berkeley-mono
+      pkgs.secret.berkeley-mono
       bustle
       clipse
       dbeaver-bin
@@ -144,8 +144,8 @@ in {
     };
 
     wayland.windowManager.hyprland = {
-      enable = cfg.wm;
-      xwayland.enable = cfg.wm;
+      enable = cfg.wm.enable;
+      xwayland.enable = cfg.wm.enable;
 
       package = inputs.hyprland.packages.${pkgs.stdenv.hostPlatform.system}.hyprland;
 
@@ -308,7 +308,7 @@ in {
       '';
 
       # systemd = {
-      #   enable = cfg.wm;
+      #   enable = cfg.wm.enable;
       #   variables = [
       #     "--all"
       #   ];

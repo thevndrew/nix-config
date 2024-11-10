@@ -15,8 +15,8 @@ in {
     ${moduleNamespace}.wol = {
       enable = lib.mkEnableOption "wol systemd service";
       wolCommand = lib.mkOption {
-        default = "echo I'm not configured correctly, check your nix config and set the wolCommand option";
-        type = lib.types.bool;
+        default = throw "vndrewMode.wol: wolCommand not set";
+        type = lib.types.str;
       };
     };
   };
