@@ -1,4 +1,7 @@
-inputs:
+{
+  inputs,
+  lib,
+}:
 with builtins; rec {
   linkFarmPair = name: path: {inherit name path;};
 

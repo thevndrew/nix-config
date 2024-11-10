@@ -11,12 +11,12 @@
   '';
 
   # TODO: setup personal binary cache
-  nixConfig = {
-    extra-substituters = [
-    ];
-    extra-trusted-public-keys = [
-    ];
-  };
+  # nixConfig = {
+  #   extra-substituters = [
+  #   ];
+  #   extra-trusted-public-keys = [
+  #   ];
+  # };
 
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs?ref=nixos-24.05";
@@ -36,27 +36,39 @@
 
     alacritty-theme.url = "github:alexghr/alacritty-theme.nix";
     devenv.url = "github:cachix/devenv";
-    disko.inputs.nixpkgs.follows = "nixpkgs";
-    disko.url = "github:nix-community/disko";
+    disko = {
+      url = "github:nix-community/disko";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
     flake-parts.url = "github:hercules-ci/flake-parts";
     flake-utils.url = "github:numtide/flake-utils";
-    manix.inputs.flake-utils.follows = "flake-utils";
-    manix.inputs.nixpkgs.follows = "nixpkgs-unstable";
-    manix.url = "github:nix-community/manix";
-    minesweeper.inputs.nixpkgs.follows = "nixpkgs-unstable";
-    minesweeper.url = "github:BirdeeHub/minesweeper";
+    manix = {
+      url = "github:nix-community/manix";
+      inputs = {
+        flake-utils.follows = "flake-utils";
+        nixpkgs.follows = "nixpkgs-unstable";
+      };
+    };
+    minesweeper = {
+      url = "github:BirdeeHub/minesweeper";
+      inputs.nixpkgs.follows = "nixpkgs-unstable";
+    };
     nix-appimage.url = "github:ralismark/nix-appimage";
     nixos-hardware.url = "github:NixOS/nixos-hardware";
     nixToLua.url = "github:BirdeeHub/nixtoLua";
-    nsearch.inputs.nixpkgs.follows = "nixpkgs";
-    nsearch.url = "github:niksingh710/nsearch";
+    nsearch = {
+      url = "github:niksingh710/nsearch";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
     templ.url = "github:a-h/templ";
     zig.url = "github:mitchellh/zig-overlay";
 
     # Window Manager/Desktop Environment stuff
     ags.url = "github:Aylur/ags";
-    anyrun.url = "github:anyrun-org/anyrun";
-    anyrun.inputs.nixpkgs.follows = "nixpkgs";
+    anyrun = {
+      url = "github:anyrun-org/anyrun";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
     hyprland.url = "git+https://github.com/hyprwm/Hyprland?submodules=1";
     hyprland-plugins = {
       url = "github:hyprwm/hyprland-plugins";

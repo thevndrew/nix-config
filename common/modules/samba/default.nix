@@ -44,13 +44,12 @@ in {
       user = lib.mkOption {
         type = lib.types.str;
         description = "User for the WSL instance";
-        # default = "";
-        required = true;
+        default = throw "You must set the user when using the samba.nix module";
       };
       home = lib.mkOption {
         type = lib.types.str;
         description = "User's home directory";
-        required = true;
+        default = throw "You must set the home directory when using the samba.nix module";
       };
       isWSL = lib.mkOption {
         type = lib.types.bool;

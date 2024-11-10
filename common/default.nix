@@ -1,8 +1,9 @@
 {inputs, ...}: let
-  utils = import ./util inputs;
-  vndrew-nvim = inputs.vndrew-nvim;
+  inherit (inputs.nixpkgs) lib;
+  my-utils = import ./util {inherit inputs lib;};
 in {
-  inherit vndrew-nvim utils;
+  inherit my-utils;
+
   hub = {
     HM ? true,
     nixos ? true,
@@ -14,23 +15,25 @@ in {
     userdata ? true,
     ...
   }: let
-    inherit (inputs.nixpkgs) lib;
-    nixosMods =
-      (import ./modules {
-        inherit inputs utils;
-        homeManager = false;
-      })
-      // {vndrew-nvim = vndrew-nvim.nixosModules.default;};
-    homeMods =
-      (import ./modules {
-        inherit inputs utils;
-        homeManager = true;
-      })
-      // {vndrew-nvim = vndrew-nvim.homeModule;};
-    overs = (import ./overlays {inherit inputs utils;}) // {vndrew-nvim = vndrew-nvim.overlays.default;};
-    mypkgs = system: (import ./pkgs {inherit inputs system utils;}) // vndrew-nvim.packages.${system};
-    usrdta = pkgs: import ./userdata {inherit inputs utils;} pkgs;
-    FM = import ./flakeModules {inherit inputs utils;};
+    vndrew-nvim = inputs.vndrew-nvim;
+
+    nixosMods = import ./modules {
+      inherit inputs my-utils;
+      homeManager = false;
+    };
+
+    homeMods = import ./modules {
+      inherit inputs my-utils;
+      homeManager = true;
+    };
+
+    overs = import ./overlays {inherit inputs my-utils;};
+
+    mypkgs = system: (import ./pkgs {inherit inputs system my-utils;});
+
+    usrdta = pkgs: import ./userdata {inherit inputs my-utils lib;} pkgs;
+
+    FM = import ./flakeModules {inherit inputs my-utils;};
   in {
     home-modules = lib.optionalAttrs HM homeMods;
     system-modules = lib.optionalAttrs nixos nixosMods;

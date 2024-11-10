@@ -1,7 +1,7 @@
 {
   moduleNamespace,
   inputs,
-  utils,
+  my-utils,
   ...
 }: {
   config,
@@ -20,8 +20,6 @@
 
   inherit (pkgs) unstable;
 in {
-  imports = ./terminals.nix;
-
   _file = ./default.nix;
 
   options = {
@@ -113,12 +111,6 @@ in {
       udiskie = {
         enable = true;
       };
-    };
-
-    terminals = {
-      enable = true;
-      alacritty = true;
-      kitty = true;
     };
 
     home.pointerCursor = {
@@ -315,13 +307,13 @@ in {
 
       '';
 
-      systemd = {
-        enable = cfg.wm;
-        variables = [
-          "--all"
-        ];
-      };
-
+      # systemd = {
+      #   enable = cfg.wm;
+      #   variables = [
+      #     "--all"
+      #   ];
+      # };
+      #
       settings = {
         #############################
         ### ENVIRONMENT VARIABLES ###

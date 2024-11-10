@@ -1,7 +1,7 @@
 {
   moduleNamespace,
   inputs,
-  utils,
+  my-utils,
   ...
 }: {
   config,
@@ -13,7 +13,7 @@
   pkgs-unstable = inputs.hyprland.inputs.nixpkgs.legacyPackages.${pkgs.stdenv.hostPlatform.system};
   my-intel-vaapi-driver = pkgs-unstable.intel-vaapi-driver.override {enableHybridCodec = true;};
 in {
-  imports = utils.scanPaths ./.;
+  imports = my-utils.scanPaths ./.;
 
   _file = ./default.nix;
 

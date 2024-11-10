@@ -1,7 +1,7 @@
 {
   inputs,
   homeManager ? false,
-  utils,
+  my-utils,
   ...
 }: let
   homeOnly = path: (
@@ -15,18 +15,26 @@
     else path
   );
   moduleNamespace = "vndrewMods";
-  args = {inherit inputs moduleNamespace homeManager utils;};
+  args = {inherit inputs moduleNamespace homeManager my-utils;};
 in {
-  alacritty = import ./alacritty args;
-  cockpit = import ./cockpit args;
-  firefox = import (homeOnly ./firefox) args;
   gui-home = import (homeOnly ./gui/home) args;
   gui-system = import (systemOnly ./gui/system) args;
+
+  cockpit = import (systemOnly ./cockpit) args;
   LD = import (systemOnly ./LD) args;
-  samba = import ./samba args;
+  networking = import (systemOnly ./networking) args;
+  samba = import (systemOnly ./samba) args;
+  virtualisation = import (systemOnly ./virtualisation) args;
+  terminals = import (systemOnly ./terminals) args;
+  wol = import (systemOnly ./wol) args;
+  wsl = import (systemOnly ./wsl) args;
+
+  vndrew-nvim = homeOnly inputs.vndrew-nvim.homeModule;
+  # vndrew-nvim = systemOnly inputs.vndrew-nvim.nixosModules.default;
+
+  alacritty = import ./alacritty args;
+  firefox = import (homeOnly ./firefox) args;
   shell = import ./shell args;
   thunar = import (homeOnly ./thunar) args;
   tmux = import ./tmux args;
-  wol = import (systemOnly ./wol) args;
-  wsl = import ./wsl args;
 }

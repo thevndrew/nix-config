@@ -8,13 +8,13 @@
   pkgs,
   ...
 }: let
-  cfg = config.${moduleNamespace}.gui-home.terminals;
+  cfg = config.${moduleNamespace}.terminals;
   inherit (pkgs) unstable;
 in {
-  _file = ./terminals.nix;
+  _file = ./default.nix;
 
   options = {
-    ${moduleNamespace}.gui-home.terminals = {
+    ${moduleNamespace}.terminals = {
       enable = lib.mkOption {
         type = lib.types.bool;
         default = false;

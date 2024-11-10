@@ -10,40 +10,47 @@
   inputs,
   stateVersion,
   users,
+  username,
   hostname,
   system-modules,
-  isDesktop,
-  isWSL,
-  user,
   ...
 }: {
   imports = with system-modules; [
-    vndrew-nvim
+    # vndrew-nvim
     # alacritty
     # shell.bash
     # shell.zsh
-    # LD
-    ./virtualisation.nix
-    ./networking.nix
+    cockpit
+    networking
+    samba
+    virtualisation
+    wol
+    wsl
+    LD
   ];
 
-  users.users = users.users;
+  users.users =
+    users.users
+    // {
+      ${username}.hashedPasswordFile = config.sops.secrets."passwords/${username}".path;
+      root.hashedPasswordFile = config.sops.secrets."passwords/${username}".path;
+    };
 
   vndrewMods = {
     # zsh.enable = true;
     # bash.enable = true;
-    LD.enable = true;
-    cockpit.enable = !isWSL;
-    gui-system.enable = isDesktop;
-    wsl.enable = isWSL;
-    samba.sharing.enable = !isWSL;
-    samba.storage.enable = hostname == "thousand-sunny";
+    # LD.enable = true;
+    # cockpit.enable = !isWSL;
+    # gui-system.enable = isDesktop;
+    # wsl.enable = isWSL;
+    # samba.sharing.enable = !isWSL;
+    # samba.storage.enable = hostname == "thousand-sunny";
   };
 
-  vndrew-nvim = {
-    enable = true;
-    packageNames = ["nvim-nightly"];
-  };
+  # vndrew-nvim = {
+  #   enable = true;
+  #   packageNames = ["nvim-nightly"];
+  # };
 
   # boot.kernelModules = ["kvm-amd" "kvm-intel"];
 
@@ -74,8 +81,8 @@
   # networking.proxy.default = "http://user:password@proxy:port/";
   # networking.proxy.noProxy = "127.0.0.1,localhost,internal.domain";
 
-  # Enable networking
-  networking.networkmanager.enable = true;
+  # # Enable networking
+  # networking.networkmanager.enable = true;
 
   security.sudo.enable = true;
   security.sudo.wheelNeedsPassword = false;
@@ -95,7 +102,7 @@
         dates = "weekly";
         extraArgs = "--keep 3 --keep-since 7d";
       };
-      flake = "/home/${user}/nix-config";
+      flake = "/home/${username}/nix-config";
     };
   };
 
@@ -248,10 +255,10 @@
     };
   };
 
-  sops = lib.mkIf (!isWSL) {
+  sops = {
     defaultSopsFile = "${inputs.mysecrets}/secrets/nix.yaml";
-    age.sshKeyPaths = "/home/${user}/.ssh/${hostname}";
-    secrets."passwords/${user}" = {
+    age.sshKeyPaths = ["/home/${username}/.ssh/${hostname}"];
+    secrets."passwords/${username}" = {
       neededForUsers = true;
     };
   };

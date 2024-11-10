@@ -6,7 +6,7 @@
   isDesktop ? false,
   isWSL ? false,
   isStandalone ? false,
-  utils,
+  my-utils,
   hostname,
   user,
   ...
@@ -159,8 +159,8 @@
     };
 
   #zsh_defs = mylib.writeLines {lines = mylib.sourceFiles (mylib.relativeToRoot "config/zsh/source");};
-  zsh_config = utils.writeLines {lines = utils.readFiles ./zsh;};
-  bash_config = utils.writeLines {lines = utils.readFiles ./bash;};
+  zsh_config = my-utils.writeLines {lines = my-utils.readFiles ./zsh;};
+  bash_config = my-utils.writeLines {lines = my-utils.readFiles ./bash;};
 
   get_secrets = import ./scripts/get_secrets_key.nix {pkgs = unstable;};
   remove_secrets = import ./scripts/remove_secrets_key.nix {pkgs = unstable;};

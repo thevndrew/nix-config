@@ -9,7 +9,7 @@ in {
   _file = ./default.nix;
 
   options = {
-    cockpit.enable = lib.mkOption {
+    ${moduleNamespace}.cockpit.enable = lib.mkOption {
       type = lib.types.bool;
       default = false;
       example = true;

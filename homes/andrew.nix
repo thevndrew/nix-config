@@ -13,8 +13,7 @@
   isWSL ? false,
   isStandalone ? false,
   hostname,
-  user,
-  utils,
+  my-utils,
   ...
 } @ args: let
   inherit (pkgs) vndrew unstable nix-alien;
@@ -165,8 +164,8 @@
     };
 
   #zsh_defs = mylib.writeLines {lines = mylib.sourceFiles (mylib.relativeToRoot "config/zsh/source");};
-  zsh_config = utils.writeLines {lines = utils.readFiles ./zsh;};
-  bash_config = utils.writeLines {lines = utils.readFiles ./bash;};
+  zsh_config = my-utils.writeLines {lines = my-utils.readFiles ./zsh;};
+  bash_config = my-utils.writeLines {lines = my-utils.readFiles ./bash;};
 in {
   imports = with home-modules; [
     # alacritty
@@ -175,7 +174,7 @@ in {
     # shell.zsh
     # shell.fish
     # firefox
-    # vndrew-nvim
+    vndrew-nvim
     # ranger
     # thunar
     gui-home
@@ -280,7 +279,7 @@ in {
   #
   home.sessionVariables = {
     EDITOR = "vim";
-    FLAKE = "/home/${user}/nix-config";
+    FLAKE = "/home/${username}/nix-config";
     _ZO_ECHO = "1";
     NIXOS_OZONE_WL = "1"; # This variable fixes electron apps in wayland
     # WLR_NO_HARDWARE_CURSORS = "1"; # if cursor becomes invisible
@@ -349,7 +348,7 @@ in {
       enable = true;
       enableCompletion = true;
       historyControl = ["ignoredups" "ignorespace"];
-      historyFile = "/home/${user}/.bash_eternal_history";
+      historyFile = "/home/${username}/.bash_eternal_history";
       historyFileSize = -1;
       historySize = -1;
       bashrcExtra = ''
@@ -442,25 +441,25 @@ in {
       enable = true;
       package = unstable.nushell;
     };
+  };
 
-    sops = {
-      age.sshKeyPaths = "/home/${user}/.ssh/${hostname}";
-      defaultSopsFile = "${inputs.mysecrets}/secrets/services.yaml";
+  sops = {
+    age.sshKeyPaths = ["/home/${username}/.ssh/${hostname}"];
+    defaultSopsFile = "${inputs.mysecrets}/secrets/services.yaml";
 
-      secrets = {
-        "services/env" = {
-          sopsFile = "${inputs.mysecrets}/secrets/services.yaml";
-          path = "/home/${user}/.config/services/services.env";
-        };
+    secrets = {
+      "services/env" = {
+        sopsFile = "${inputs.mysecrets}/secrets/services.yaml";
+        path = "/home/${username}/.config/services/services.env";
+      };
 
-        "services/${hostname}" = lib.mkIf (!isWSL) {
-          sopsFile = "${inputs.mysecrets}/secrets/services.yaml";
-          path = "/home/${user}/.config/services/${hostname}.yaml";
-        };
+      "services/${hostname}" = lib.mkIf (!isWSL) {
+        sopsFile = "${inputs.mysecrets}/secrets/services.yaml";
+        path = "/home/${username}/.config/services/${hostname}.yaml";
+      };
 
-        "atuin_key" = {
-          sopsFile = "${inputs.mysecrets}/secrets/atuin.yaml";
-        };
+      "atuin_key" = {
+        sopsFile = "${inputs.mysecrets}/secrets/atuin.yaml";
       };
     };
   };
@@ -469,9 +468,9 @@ in {
     [
       (zja {pkgs = unstable;})
 
-      pkgs.clone_repos
-      pkgs.sops_secrets_key
-      pkgs.update_input
+      pkgs.my_pkgs.clone_repos
+      pkgs.my_pkgs.sops_secrets_key
+      pkgs.my_pkgs.update_input
 
       (pkgs.writeShellApplication {
         name = "zipcbz";
@@ -762,7 +761,7 @@ in {
 
         user = {
           gpgsign = true;
-          signingkey = "/home/${user}/.ssh/${hostname}.pub";
+          signingkey = "/home/${username}/.ssh/${hostname}.pub";
         };
       };
 

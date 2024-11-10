@@ -27,41 +27,38 @@ in {
       user = lib.mkOption {
         type = lib.types.str;
         description = "User for the WSL instance";
-        # default = "";
-        required = true;
+        default = throw "Must set the user option when using the wsl.nix module";
       };
     };
+  };
 
-    config = lib.mkIf cfg.enable {
-      my-networking.enable = false;
-      my-virtualisation.enable = false;
-      wsl = {
-        enable = true;
+  config = lib.mkIf cfg.enable {
+    wsl = {
+      enable = true;
 
-        defaultUser = cfg.user;
-        docker-desktop.enable = true;
+      defaultUser = cfg.user;
+      docker-desktop.enable = true;
 
-        extraBin = with pkgs; [
-          # Binaries for Docker Desktop wsl-distro-proxy
-          {src = "${coreutils}/bin/mkdir";}
-          {src = "${coreutils}/bin/cat";}
-          {src = "${coreutils}/bin/whoami";}
-          {src = "${coreutils}/bin/ls";}
-          {src = "${busybox}/bin/addgroup";}
-          {src = "${su}/bin/groupadd";}
-          {src = "${su}/bin/usermod";}
-        ];
+      extraBin = with pkgs; [
+        # Binaries for Docker Desktop wsl-distro-proxy
+        {src = "${coreutils}/bin/mkdir";}
+        {src = "${coreutils}/bin/cat";}
+        {src = "${coreutils}/bin/whoami";}
+        {src = "${coreutils}/bin/ls";}
+        {src = "${busybox}/bin/addgroup";}
+        {src = "${su}/bin/groupadd";}
+        {src = "${su}/bin/usermod";}
+      ];
 
-        startMenuLaunchers = true;
+      startMenuLaunchers = true;
 
-        wslConf = {
-          automount = {
-            root = "/mnt";
-            options = "metadata,uid=1001,gid=100";
-          };
-          interop.appendWindowsPath = false;
-          network.generateHosts = false;
+      wslConf = {
+        automount = {
+          root = "/mnt";
+          options = "metadata,uid=1001,gid=100";
         };
+        interop.appendWindowsPath = false;
+        network.generateHosts = false;
       };
     };
   };

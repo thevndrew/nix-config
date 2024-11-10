@@ -1,22 +1,26 @@
-{
+{moduleNamespace, ...}: {
   config,
   lib,
   ...
 }: let
-  cfg = config.my-networking;
+  cfg = config.${moduleNamespace}.networking;
 in {
+  _file = ./default.nix;
   options = {
-    my-networking.enable = lib.mkOption {
-      type = lib.types.bool;
-      default = true;
-      example = false;
-      description = "enable networking related configuration";
+    ${moduleNamespace}.networking = {
+      enable = lib.mkOption {
+        type = lib.types.bool;
+        default = true;
+        example = false;
+        description = "enable networking related configuration";
+      };
     };
   };
 
   config = lib.mkIf cfg.enable {
     networking = {
-      # enableIPv6  = false;
+      enableIPv6 = true;
+
       firewall = {
         # enable the firewall
         enable = true;
