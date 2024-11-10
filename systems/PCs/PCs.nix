@@ -40,17 +40,7 @@
     # zsh.enable = true;
     # bash.enable = true;
     # LD.enable = true;
-    # cockpit.enable = !isWSL;
-    # gui-system.enable = isDesktop;
-    # wsl.enable = isWSL;
-    # samba.sharing.enable = !isWSL;
-    # samba.storage.enable = hostname == "thousand-sunny";
   };
-
-  # vndrew-nvim = {
-  #   enable = true;
-  #   packageNames = ["nvim-nightly"];
-  # };
 
   # boot.kernelModules = ["kvm-amd" "kvm-intel"];
 

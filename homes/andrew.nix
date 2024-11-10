@@ -178,6 +178,7 @@ in {
     # ranger
     # thunar
     gui-home
+    terminals
   ];
 
   nvim = {
@@ -192,6 +193,8 @@ in {
     # tmux.enable = true;
     # firefox.enable = true;
     # thunar.enable = true;
+    terminals.enable = true;
+    terminals.kitty = true;
     gui-home.enable = isDesktop;
     gui-home.wm.enable = isDesktop;
     gui-home.audio.enable = isDesktop;

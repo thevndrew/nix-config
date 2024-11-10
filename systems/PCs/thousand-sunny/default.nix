@@ -9,9 +9,11 @@
 
     # Include the results of the hardware scan.
     ./hardware-configuration.nix
+    gui-system
   ];
 
   vndrewMods = {
+    gui-system.enable = true;
     samba = {
       user = username;
       sharing.enable = true;

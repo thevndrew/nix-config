@@ -13,8 +13,6 @@
   pkgs-unstable = inputs.hyprland.inputs.nixpkgs.legacyPackages.${pkgs.stdenv.hostPlatform.system};
   my-intel-vaapi-driver = pkgs-unstable.intel-vaapi-driver.override {enableHybridCodec = true;};
 in {
-  imports = my-utils.scanPaths ./.;
-
   _file = ./default.nix;
 
   options = {
@@ -50,8 +48,6 @@ in {
   };
 
   config = lib.mkIf cfg.enable {
-    hello.enable = cfg.enable;
-
     programs.hyprland = {
       enable = cfg.enable;
       package = inputs.hyprland.packages.${pkgs.stdenv.hostPlatform.system}.hyprland;

@@ -25,10 +25,10 @@ in {
   networking = import (systemOnly ./networking) args;
   samba = import (systemOnly ./samba) args;
   virtualisation = import (systemOnly ./virtualisation) args;
-  terminals = import (systemOnly ./terminals) args;
   wol = import (systemOnly ./wol) args;
   wsl = import (systemOnly ./wsl) args;
 
+  terminals = import (homeOnly ./terminals) args;
   vndrew-nvim = homeOnly inputs.vndrew-nvim.homeModule;
   # vndrew-nvim = systemOnly inputs.vndrew-nvim.nixosModules.default;
 
