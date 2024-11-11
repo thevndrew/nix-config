@@ -1,18 +1,28 @@
 {
-  mylib,
+  lib,
   pkgs,
-  systemInfo,
+  username,
+  system-modules,
   ...
 }: {
-  imports = [
+  imports = with system-modules; [
+    ../PCs.nix
+
     # Include the results of the hardware scan.
     ./hardware-configuration.nix
-
-    # Setup WOL systemd service
-    (import (mylib.relativeToRoot "hosts/common/systemd/wol.nix") {
-      wolCommand = "ethtool -s enp1s0 wol g && ethtool -s enp2s0 wol g";
-    })
   ];
+  vndrewMods = {
+    cockpit.enable = true;
+    samba = {
+      user = username;
+      sharing.enable = true;
+      home = "/home/${username}";
+    };
+    wol = {
+      enable = true;
+      wolCommand = "ethtool -s enp1s0 wol g && ethtool -s enp2s0 wol g";
+    };
+  };
 
   # Use the systemd-boot EFI boot loader.
   boot = {
@@ -26,9 +36,6 @@
     };
   };
 
-  users.users.${systemInfo.user}.extraGroups = ["wheel" "podman"];
-  #extraGroups = [ "wheel" "docker" ];
-
   systemd.services."qbittorrent_restart" = {
     enable = true;
     description = "qbittorrent automatic restart";
@@ -37,8 +44,8 @@
       Type = "oneshot";
     };
     serviceConfig = {
-      ExecStart = "/bin/sh -c '${systemInfo.home}/repos/services/qbittorrent/restart.sh'";
-      User = systemInfo.user;
+      ExecStart = "/bin/sh -c '/home/${username}/repos/services/qbittorrent/restart.sh'";
+      User = username;
       Group = "users";
     };
     startAt = "hourly";

@@ -24,7 +24,7 @@ in {
 
       wezterm = lib.mkOption {
         type = lib.types.bool;
-        default = true;
+        default = cfg.enable;
         example = false;
         description = "Install and configure wezterm";
       };

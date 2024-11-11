@@ -193,8 +193,8 @@ in {
     # tmux.enable = true;
     # firefox.enable = true;
     # thunar.enable = true;
-    terminals.enable = true;
-    terminals.kitty = true;
+    terminals.enable = isDesktop;
+    terminals.kitty = isDesktop;
     gui-home.enable = isDesktop;
     gui-home.wm.enable = isDesktop;
     gui-home.audio.enable = isDesktop;
